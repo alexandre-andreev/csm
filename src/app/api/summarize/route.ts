@@ -3,6 +3,18 @@ import { createClient } from '@/lib/supabase/server'
 import { extractVideoId, getYouTubeVideoInfo, getYouTubeTranscript } from '@/lib/services/youtube'
 import { generateSummary } from '@/lib/services/gemini'
 
+function parseDurationToSeconds(duration: string): number {
+  // Парсим ISO 8601 duration (например, "PT5M30S" = 5 минут 30 секунд)
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+  if (!match) return 0
+  
+  const hours = parseInt(match[1] || '0')
+  const minutes = parseInt(match[2] || '0')
+  const seconds = parseInt(match[3] || '0')
+  
+  return hours * 3600 + minutes * 60 + seconds
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json()
@@ -48,10 +60,12 @@ export async function POST(request: NextRequest) {
         video_title: videoInfo.title,
         youtube_url: url,
         video_id: videoId,
+        transcript_text: transcript,
         summary_text: summary,
         processing_time: processingTime,
         is_favorite: false,
         channel_title: videoInfo.channelTitle,
+        video_duration: videoInfo.duration ? parseDurationToSeconds(videoInfo.duration) : 0,
         duration: videoInfo.duration,
         thumbnail_url: videoInfo.thumbnail
       })

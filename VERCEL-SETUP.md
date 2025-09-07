@@ -1,0 +1,47 @@
+# Настройка для развертывания на Vercel
+
+## Переменные окружения
+
+Добавьте следующие переменные окружения в настройках проекта Vercel:
+
+### Supabase Configuration
+```
+NEXT_PUBLIC_SUPABASE_URL=ваш_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_supabase_anon_key
+```
+
+### Google Gemini API
+```
+GEMINI_API_KEY=ваш_gemini_api_key
+```
+
+### YouTube Data API
+```
+YOUTUBE_API_KEY=ваш_youtube_api_key
+```
+
+### YouTube Transcript API
+```
+TRANSCRIPT_API_KEY=ваш_transcript_api_key
+```
+
+## Инструкции по настройке
+
+1. **Supabase**: Получите URL и Anon Key из настроек проекта Supabase
+2. **Google Gemini**: Получите API ключ из Google AI Studio
+3. **YouTube Data API**: Создайте проект в Google Cloud Console и включите YouTube Data API v3
+4. **YouTube Transcript API**: Получите API ключ с https://www.youtube-transcript.io/
+
+## Важные замечания
+
+- **Транскрипты**: Не все видео имеют доступные транскрипты. Приложение корректно обработает такие случаи и покажет пользователю соответствующее сообщение.
+- **Региональные ограничения**: Транскрипты работают только на серверах Vercel из-за региональных ограничений API.
+- **Обработка ошибок**: Приложение не создает аннотации с заглушками - если транскрипт недоступен, пользователь получит понятное сообщение об ошибке.
+
+## Развертывание
+
+1. Подключите репозиторий к Vercel
+2. Добавьте все переменные окружения
+3. Задеплойте проект
+
+Приложение будет работать с реальными API и корректно обрабатывать все случаи недоступности транскриптов.

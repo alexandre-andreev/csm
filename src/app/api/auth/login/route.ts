@@ -29,6 +29,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Убеждаемся, что пользователь существует в таблице users
+    if (data.user) {
+      const { error: upsertError } = await supabase
+        .from('users')
+        .upsert({
+          id: data.user.id,
+          email: data.user.email,
+          created_at: data.user.created_at,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
+        })
+
+      if (upsertError) {
+        console.error('Ошибка создания/обновления пользователя:', upsertError)
+      }
+    }
+
     console.log('Успешный вход для пользователя:', data.user?.email)
     return NextResponse.json({ user: data.user })
   } catch (error) {
