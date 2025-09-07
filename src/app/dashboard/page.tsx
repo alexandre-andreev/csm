@@ -493,7 +493,7 @@ export default function DashboardPage() {
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden'
                       }}>
-                        {summary.summary}
+                        {summary.summary_text}
                       </p>
                       <div style={{
                         display: 'flex',
