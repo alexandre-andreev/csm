@@ -72,13 +72,17 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
     }
 
     const data = await response.json()
+    console.log('Ответ от youtube-transcript.io:', JSON.stringify(data, null, 2))
     
     if (!data || !data.transcripts || data.transcripts.length === 0) {
+      console.log('Транскрипт не найден в ответе:', data)
       throw new Error('Транскрипт не найден для этого видео')
     }
 
     // API возвращает массив транскриптов, берем первый
     const transcript = data.transcripts[0]
+    console.log('Первый транскрипт:', JSON.stringify(transcript, null, 2))
+    
     if (!transcript || !transcript.transcript) {
       throw new Error('Транскрипт не найден для этого видео')
     }
