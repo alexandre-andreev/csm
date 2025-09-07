@@ -53,10 +53,9 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
   }
 
   try {
-    const response = await fetch(`https://www.youtube-transcript.io/api/transcript?video_id=${videoId}`, {
+    const response = await fetch(`https://www.youtube-transcript.io/api/transcript?video_id=${videoId}&api_key=${apiKey}`, {
       headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'youtube-transcript.io'
+        'Content-Type': 'application/json'
       }
     })
 
