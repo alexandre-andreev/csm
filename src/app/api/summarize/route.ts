@@ -45,11 +45,15 @@ export async function POST(request: NextRequest) {
       .from('summaries')
       .insert({
         user_id: user.id,
-        title: videoInfo.title,
-        video_url: url,
-        summary: summary,
+        video_title: videoInfo.title,
+        youtube_url: url,
+        video_id: videoId,
+        summary_text: summary,
         processing_time: processingTime,
-        is_favorite: false
+        is_favorite: false,
+        channel_title: videoInfo.channelTitle,
+        duration: videoInfo.duration,
+        thumbnail_url: videoInfo.thumbnail
       })
       .select()
       .single()

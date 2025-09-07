@@ -7,12 +7,15 @@ import ReactMarkdown from 'react-markdown'
 
 interface Summary {
   id: string
-  title: string
-  video_url: string
-  summary: string
+  video_title: string
+  youtube_url: string
+  summary_text: string
   created_at: string
   is_favorite: boolean
   processing_time: number
+  channel_title?: string
+  duration?: string
+  thumbnail_url?: string
 }
 
 export default function SummaryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -310,7 +313,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 margin: '0 0 1rem 0',
                 lineHeight: '1.3'
               }}>
-                {summary.title}
+                {summary.video_title}
               </h1>
 
               <div style={{
@@ -351,7 +354,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               </div>
 
               <a
-                href={summary.video_url}
+                href={summary.youtube_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -504,7 +507,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 )
               }}
             >
-              {summary.summary}
+              {summary.summary_text}
             </ReactMarkdown>
           </div>
         </div>

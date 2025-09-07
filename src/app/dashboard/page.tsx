@@ -6,12 +6,15 @@ import { Plus, Search, Filter, Heart, Trash2, Eye, LogOut, Sparkles, Clock, User
 
 interface Summary {
   id: string
-  title: string
-  video_url: string
-  summary: string
+  video_title: string
+  youtube_url: string
+  summary_text: string
   created_at: string
   is_favorite: boolean
   processing_time: number
+  channel_title?: string
+  duration?: string
+  thumbnail_url?: string
 }
 
 export default function DashboardPage() {
@@ -79,8 +82,8 @@ export default function DashboardPage() {
   }
 
   const filteredSummaries = summaries.filter(summary =>
-    summary.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    summary.summary.toLowerCase().includes(searchTerm.toLowerCase())
+    summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const favoriteCount = summaries.filter(s => s.is_favorite).length
@@ -478,7 +481,7 @@ export default function DashboardPage() {
                         margin: '0 0 0.5rem 0',
                         lineHeight: '1.4'
                       }}>
-                        {summary.title}
+                        {summary.video_title}
                       </h3>
                       <p style={{
                         fontSize: '0.875rem',
