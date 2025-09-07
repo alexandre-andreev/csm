@@ -15,19 +15,30 @@ interface Summary {
   processing_time: number
 }
 
-export default function SummaryPage({ params }: { params: { id: string } }) {
+export default function SummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [id, setId] = useState<string>('')
   const router = useRouter()
 
   useEffect(() => {
-    fetchSummary()
-  }, [params.id])
+    const getParams = async () => {
+      const resolvedParams = await params
+      setId(resolvedParams.id)
+    }
+    getParams()
+  }, [params])
+
+  useEffect(() => {
+    if (id) {
+      fetchSummary()
+    }
+  }, [id])
 
   const fetchSummary = async () => {
     try {
-      const response = await fetch(`/api/summaries/${params.id}`)
+      const response = await fetch(`/api/summaries/${id}`)
       if (response.ok) {
         const data = await response.json()
         setSummary(data)
