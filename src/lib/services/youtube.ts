@@ -53,10 +53,15 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
   }
 
   try {
-    const response = await fetch(`https://www.youtube-transcript.io/api/transcript?video_id=${videoId}&api_key=${apiKey}`, {
+    const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
+      method: 'POST',
       headers: {
+        'Authorization': `Basic ${apiKey}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({ 
+        ids: [videoId]
+      })
     })
 
     if (!response.ok) {
@@ -66,13 +71,19 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
       throw new Error(`Ошибка получения транскрипта: ${response.status}`)
     }
 
-    const data: TranscriptResponse[] = await response.json()
+    const data = await response.json()
     
-    if (!data || data.length === 0) {
+    if (!data || !data.transcripts || data.transcripts.length === 0) {
       throw new Error('Транскрипт не найден для этого видео')
     }
 
-    return data.map(item => item.text).join(' ')
+    // API возвращает массив транскриптов, берем первый
+    const transcript = data.transcripts[0]
+    if (!transcript || !transcript.transcript) {
+      throw new Error('Транскрипт не найден для этого видео')
+    }
+
+    return transcript.transcript.map((item: any) => item.text).join(' ')
   } catch (error) {
     console.error('Ошибка получения транскрипта:', error)
     throw error // Пробрасываем ошибку дальше, не возвращаем заглушку
