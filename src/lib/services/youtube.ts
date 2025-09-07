@@ -13,34 +13,52 @@ interface TranscriptResponse {
 }
 
 export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideoInfo> {
-  console.log('Получение информации о видео:', videoId)
+  console.log('Получение информации о видео из youtube-transcript.io:', videoId)
   
-  const apiKey = process.env.YOUTUBE_API_KEY
+  const apiKey = process.env.TRANSCRIPT_API_KEY
   if (!apiKey) {
-    throw new Error('API ключ для YouTube не настроен')
+    throw new Error('API ключ для получения транскрипта не настроен')
   }
 
-  const response = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet,contentDetails`
-  )
+  try {
+    const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ 
+        ids: [videoId]
+      })
+    })
 
-  if (!response.ok) {
-    throw new Error('Не удалось получить информацию о видео')
-  }
+    if (!response.ok) {
+      throw new Error(`Ошибка получения информации о видео: ${response.status}`)
+    }
 
-  const data = await response.json()
-  
-  if (!data.items || data.items.length === 0) {
-    throw new Error('Видео не найдено')
-  }
+    const data = await response.json()
+    console.log('Ответ от youtube-transcript.io для информации о видео:', JSON.stringify(data, null, 2))
+    
+    if (!data || !data.transcripts || data.transcripts.length === 0) {
+      throw new Error('Видео не найдено')
+    }
 
-  const video = data.items[0]
-  return {
-    title: video.snippet.title,
-    description: video.snippet.description,
-    duration: video.contentDetails.duration,
-    thumbnail: video.snippet.thumbnails.maxres?.url || video.snippet.thumbnails.high?.url,
-    channelTitle: video.snippet.channelTitle
+    const transcript = data.transcripts[0]
+    if (!transcript) {
+      throw new Error('Информация о видео не найдена')
+    }
+
+    // Извлекаем информацию о видео из ответа youtube-transcript.io
+    return {
+      title: transcript.title || `Видео ${videoId}`,
+      description: transcript.description || '',
+      duration: transcript.duration || 'PT0S',
+      thumbnail: transcript.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      channelTitle: transcript.channelTitle || 'Неизвестный канал'
+    }
+  } catch (error) {
+    console.error('Ошибка получения информации о видео:', error)
+    throw error
   }
 }
 
