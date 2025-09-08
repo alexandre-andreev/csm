@@ -506,7 +506,7 @@ export default function DashboardPage() {
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
-                          fontSize: '1rem', // Reduced from 1.125rem to 1rem (2 sizes smaller)
+                          fontSize: '1.125rem', // Increased from 1rem to 1.125rem (1 size larger)
                           fontWeight: '600',
                           color: '#111827',
                           margin: '0 0 0.5rem 0',
