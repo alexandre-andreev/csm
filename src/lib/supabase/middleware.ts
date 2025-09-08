@@ -38,8 +38,22 @@ export async function updateSession(request: NextRequest) {
   // Public routes that don't require authentication
   const publicRoutes = ['/', '/login', '/signup', '/signup-debug', '/test', '/auth']
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname === route)
+  
+  // API routes that don't require authentication (only auth routes)
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api/auth/')
+  
+  // Allow API auth routes and public routes without authentication
+  if (isApiRoute || isPublicRoute) {
+    return supabaseResponse
+  }
 
-  if (!user && !isPublicRoute) {
+  // For API routes, let them handle their own authentication
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return supabaseResponse
+  }
+
+  // For protected pages, check if user is authenticated
+  if (!user) {
     // No user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
