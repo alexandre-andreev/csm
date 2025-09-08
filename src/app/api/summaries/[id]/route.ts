@@ -3,10 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: any
 ) {
   try {
-    const { id } = context.params
+    const id = params?.id as string;
+    if (!id) {
+      return NextResponse.json({ error: 'ID не найден' }, { status: 400 });
+    }
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -44,10 +47,13 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: any
 ) {
   try {
-    const { id } = context.params
+    const id = params?.id as string;
+    if (!id) {
+      return NextResponse.json({ error: 'ID не найден' }, { status: 400 });
+    }
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -84,10 +90,13 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: any
 ) {
   try {
-    const { id } = context.params
+    const id = params?.id as string;
+    if (!id) {
+      return NextResponse.json({ error: 'ID не найден' }, { status: 400 });
+    }
     const { is_favorite } = await request.json()
 
     const supabase = await createClient()
