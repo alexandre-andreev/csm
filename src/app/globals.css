@@ -57,3 +57,37 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Custom styles for dashboard prose clipped text */
+  .dashboard-summary .prose {
+    @apply text-gray-600;
+  }
+  .dashboard-summary .prose h1,
+  .dashboard-summary .prose h2,
+  .dashboard-summary .prose h3,
+  .dashboard-summary .prose h4,
+  .dashboard-summary .prose h5,
+  .dashboard-summary .prose h6 {
+    @apply text-gray-700 font-semibold mt-2 mb-1;
+  }
+  .dashboard-summary .prose p {
+    @apply mb-2;
+  }
+  .dashboard-summary .prose ul,
+  .dashboard-summary .prose ol {
+    @apply mb-2 pl-4;
+  }
+  .dashboard-summary .prose li {
+    @apply mb-1;
+  }
+  .dashboard-summary .prose strong {
+    @apply font-semibold text-gray-700;
+  }
+  .dashboard-summary .prose em {
+    @apply italic;
+  }
+  .dashboard-summary .prose code {
+    @apply bg-gray-100 px-1 py-0.5 rounded text-sm;
+  }
+}
