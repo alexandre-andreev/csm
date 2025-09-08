@@ -358,25 +358,6 @@ export default function HomePage() {
                 <Play style={{ width: '2rem', height: '2rem', color: 'white' }} />
               </div>
 
-              <h3 style={{
-                color: 'white',
-                fontSize: '1.25rem',
-                fontWeight: 'bold',
-                textAlign: 'center',
-                margin: 0
-              }}>
-                YouTube видео
-              </h3>
-              
-              <p style={{
-                color: 'rgba(255, 255, 255, 0.8)',
-                textAlign: 'center',
-                lineHeight: '1.5',
-                margin: 0
-              }}>
-                Вставьте ссылку на видео и получите краткую аннотацию
-              </p>
-
               <div style={{
                 width: '100%',
                 height: '2px',

@@ -17,6 +17,28 @@ interface Summary {
   thumbnail_url?: string
 }
 
+// Function to clean up duplicate titles in the summary
+function cleanSummaryText(summaryText: string, videoTitle: string): string {
+  // Split the summary into lines
+  const lines = summaryText.split('\n').filter(line => line.trim() !== '');
+  
+  // If the first line is similar to the video title, remove it
+  if (lines.length > 0) {
+    const firstLine = lines[0].replace(/^#+\s*/, '').trim(); // Remove markdown headers
+    const cleanVideoTitle = videoTitle.trim();
+    
+    // Check if the first line is the same or very similar to the video title
+    if (firstLine === cleanVideoTitle || 
+        firstLine.startsWith(cleanVideoTitle) ||
+        cleanVideoTitle.startsWith(firstLine)) {
+      // Remove the first line and join the rest
+      return lines.slice(1).join('\n');
+    }
+  }
+  
+  return summaryText;
+}
+
 export default function DashboardPage() {
   const [summaries, setSummaries] = useState<Summary[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -492,7 +514,7 @@ export default function DashboardPage() {
                           WebkitBoxOrient: 'vertical'
                         }}>
                           <ReactMarkdown components={{ p: ({ children }) => <>{children}</> }}>
-                            {summary.summary_text}
+                            {cleanSummaryText(summary.summary_text, summary.video_title)}
                           </ReactMarkdown>
                         </div>
                       </div>
