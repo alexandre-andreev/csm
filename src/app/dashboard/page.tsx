@@ -468,7 +468,7 @@ export default function DashboardPage() {
                       justifyContent: 'space-between',
                       marginBottom: '1rem'
                     }}>
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
                           fontSize: '1.125rem',
                           fontWeight: '600',
