@@ -6,135 +6,86 @@ interface YouTubeVideoInfo {
   channelTitle: string
 }
 
-interface TranscriptResponse {
-  text: string
-  duration: number
-  offset: number
+function sanitizeTextForAPI(text: string): string {
+    try {
+        const normalized = text.normalize('NFC');
+        const cleaned = normalized
+            .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') 
+            .replace(/[\u2000-\u206F\u2E00-\u2E7F\u3000-\u303F]/g, ' ')
+            .replace(/[\uFEFF\uFFFE\uFFFF]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        return cleaned;
+    } catch (error) {
+        console.error('Error in sanitizeTextForAPI:', error);
+        return text.replace(/[^\x20-\x7E]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
 }
 
-export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideoInfo> {
-  console.log('Получение информации о видео из youtube-transcript.io:', videoId)
-  
+async function fetchTranscriptData(videoId: string): Promise<any> {
   const apiKey = process.env.TRANSCRIPT_API_KEY
   if (!apiKey) {
     throw new Error('API ключ для получения транскрипта не настроен')
   }
 
+  const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${apiKey}`,
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify({ ids: [videoId] })
+  })
+  
+  const responseText = await response.text();
+  if (!response.ok) {
+    console.error(`Ошибка от youtube-transcript.io. Status: ${response.status}. Body: ${responseText}`);
+    throw new Error(`Ошибка получения данных от youtube-transcript.io: ${response.status}`);
+  }
+
   try {
-    const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ 
-        ids: [videoId]
-      })
-    })
+    const data = JSON.parse(responseText);
+    console.log('Успешный сырой ответ от youtube-transcript.io:', responseText.substring(0, 500) + '...');
+    return data;
+  } catch (jsonError) {
+    console.error('Не удалось распарсить JSON-ответ от youtube-transcript.io.');
+    console.error('Сырое тело ответа:', responseText);
+    throw new Error('Сервер youtube-transcript.io вернул некорректный JSON.');
+  }
+}
 
-    const responseText = await response.text();
-    if (!response.ok) {
-      console.error(`Ошибка от youtube-transcript.io (video info). Status: ${response.status}. Body: ${responseText}`);
-      throw new Error(`Ошибка получения информации о видео: ${response.status}`);
-    }
+export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideoInfo> {
+  const data = await fetchTranscriptData(videoId);
 
-    let data;
-    try {
-        data = JSON.parse(responseText);
-    } catch (jsonError) {
-        console.error('Не удалось распарсить JSON-ответ от youtube-transcript.io (video info).');
-        console.error('Сырое тело ответа:', responseText);
-        throw new Error('Сервер youtube-transcript.io вернул некорректный JSON.');
-    }
+  if (!Array.isArray(data) || data.length === 0 || !data[0].id) {
+    console.error('Неожиданная структура API (video info):', JSON.stringify(data, null, 2));
+    throw new Error('Видео не найдено или имеет неожиданный формат ответа.');
+  }
+  
+  const videoData = data[0];
 
-    console.log('Успешный сырой ответ от youtube-transcript.io (video info):', responseText);
-
-    if (!data || !data.transcripts || data.transcripts.length === 0) {
-      console.error('В успешном ответе от youtube-transcript.io отсутствует массив `transcripts`.');
-      throw new Error('Видео не найдено')
-    }
-    
-    const transcript = data.transcripts[0]
-    if (!transcript) {
-      console.error('Не найден объект транскрипта в успешном ответе от youtube-transcript.io');
-      throw new Error('Информация о видео не найдена')
-    }
-
-    // Извлекаем информацию о видео из ответа youtube-transcript.io
-    return {
-      title: transcript.title || `Видео ${videoId}`,
-      description: transcript.description || '',
-      duration: transcript.duration || 'PT0S',
-      thumbnail: transcript.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      channelTitle: transcript.channelTitle || 'Неизвестный канал'
-    }
-  } catch (error) {
-    console.error('Ошибка получения информации о видео:', error)
-    throw error
+  return {
+    title: videoData.title || `Видео ${videoId}`,
+    description: videoData.description || '',
+    duration: videoData.duration || 'PT0S',
+    thumbnail: videoData.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    channelTitle: videoData.channelTitle || 'Неизвестный канал'
   }
 }
 
 export async function getYouTubeTranscript(videoId: string): Promise<string> {
-  console.log('Получение транскрипта для видео:', videoId)
+  const data = await fetchTranscriptData(videoId);
   
-  const apiKey = process.env.TRANSCRIPT_API_KEY
-  if (!apiKey) {
-    throw new Error('API ключ для получения транскрипта не настроен')
+  if (!Array.isArray(data) || data.length === 0 || !data[0].tracks || !Array.isArray(data[0].tracks) || data[0].tracks.length === 0 || !data[0].tracks[0].transcript) {
+    console.error('Неожиданная структура API (transcript):', JSON.stringify(data, null, 2));
+    throw new Error('Не удалось получить транскрипт. Возможно, у видео нет субтитров.');
   }
 
-  try {
-    console.log('Отправка запроса к youtube-transcript.io с API ключом:', apiKey.substring(0, 10) + '...')
-    
-    const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ 
-        ids: [videoId]
-      })
-    })
+  const transcriptSegments = data[0].tracks[0].transcript;
+  const rawText = transcriptSegments.map((segment: any) => segment.text).join(' ');
+  const sanitizedText = sanitizeTextForAPI(rawText);
 
-    const responseText = await response.text();
-    if (!response.ok) {
-      console.error(`Ошибка от youtube-transcript.io (transcript). Status: ${response.status}. Body: ${responseText}`);
-      if (response.status === 404) {
-        throw new Error('Транскрипт недоступен для этого видео')
-      }
-      throw new Error(`Ошибка получения транскрипта: ${response.status} - ${responseText}`)
-    }
-
-    let data;
-    try {
-        data = JSON.parse(responseText);
-    } catch (jsonError) {
-        console.error('Не удалось распарсить JSON-ответ от youtube-transcript.io (transcript).');
-        console.error('Сырое тело ответа:', responseText);
-        throw new Error('Сервер youtube-transcript.io вернул некорректный JSON.');
-    }
-
-    console.log('Успешный сырой ответ от youtube-transcript.io (transcript):', responseText);
-    
-    if (!data || !data.transcripts || data.transcripts.length === 0) {
-      console.log('Транскрипт не найден в ответе:', data)
-      throw new Error('Транскрипт не найден для этого видео')
-    }
-
-    // API возвращает массив транскриптов, берем первый
-    const transcript = data.transcripts[0]
-    console.log('Первый транскрипт:', JSON.stringify(transcript, null, 2))
-    
-    if (!transcript || !transcript.transcript) {
-      console.error('В ответе от youtube-transcript.io отсутствует поле "transcript"');
-      throw new Error('Транскрипт не найден для этого видео')
-    }
-
-    return transcript.transcript.map((item: any) => item.text).join(' ')
-  } catch (error) {
-    console.error('Ошибка получения транскрипта:', error)
-    throw error // Пробрасываем ошибку дальше, не возвращаем заглушку
-  }
+  return sanitizedText;
 }
 
 export function extractVideoId(url: string): string {

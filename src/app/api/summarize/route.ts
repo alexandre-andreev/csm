@@ -37,44 +37,22 @@ export async function POST(request: NextRequest) {
     }
 
     const startTime = Date.now()
-    
-    let videoId: string;
-    try {
-      console.log('Шаг 1: Извлечение Video ID из URL:', url);
-      videoId = extractVideoId(url);
-      console.log('Успешно извлечен Video ID:', videoId);
-    } catch (error) {
-      console.error('Ошибка на шаге 1 (extractVideoId):', error);
-      return NextResponse.json({ error: 'Неверная ссылка на YouTube видео. Убедитесь, что ссылка корректна.' }, { status: 400 });
-    }
 
-    let videoInfo: Awaited<ReturnType<typeof getYouTubeVideoInfo>>;
-    let transcript: string;
+    // Извлекаем ID видео
+    const videoId = extractVideoId(url)
 
-    try {
-      console.log('Шаг 2: Получение информации о видео и транскрипта...');
-      videoInfo = await getYouTubeVideoInfo(videoId);
-      transcript = await getYouTubeTranscript(videoId);
-      console.log('Успешно получена информация о видео:', videoInfo.title);
-      console.log('Успешно получен транскрипт. Длина:', transcript.length);
-    } catch (error: any) {
-      console.error('Ошибка на шаге 2 (getYouTubeVideoInfo или getYouTubeTranscript):', error);
-      return NextResponse.json({ error: error.message || 'Не удалось получить транскрипт или информацию о видео.' }, { status: 400 });
-    }
+    // Получаем информацию о видео и транскрипт параллельно
+    const [videoInfo, transcript] = await Promise.all([
+      getYouTubeVideoInfo(videoId),
+      getYouTubeTranscript(videoId)
+    ])
 
-    let summary: string;
-    try {
-      console.log('Шаг 3: Генерация аннотации...');
-      summary = await generateSummary(transcript, videoInfo.title);
-      console.log('Успешно сгенерирована аннотация. Длина:', summary.length);
-    } catch (error: any) {
-      console.error('Ошибка на шаге 3 (generateSummary):', error);
-      return NextResponse.json({ error: error.message || 'Не удалось сгенерировать аннотацию с помощью ИИ.' }, { status: 400 });
-    }
-    
+    // Генерируем аннотацию
+    const summary = await generateSummary(transcript, videoInfo.title)
+
     const processingTime = Date.now() - startTime
 
-    console.log('Шаг 4: Сохранение аннотации в базу данных...');
+    // Сохраняем аннотацию в базу данных
     const { data: summaryData, error: insertError } = await supabase
       .from('summaries')
       .insert({
@@ -95,13 +73,12 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
-      console.error('Ошибка на шаге 4 (сохранение в базу данных):', insertError)
+      console.error('Ошибка сохранения аннотации:', insertError)
       return NextResponse.json(
-        { error: 'Ошибка сохранения аннотации в базу данных' },
+        { error: 'Ошибка сохранения аннотации' },
         { status: 500 }
       )
     }
-    console.log('Успешно сохранено в базу данных. ID:', summaryData.id);
 
     // Логируем статистику использования
     await supabase
@@ -118,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(summaryData)
   } catch (error) {
-    console.error('Непредвиденная ошибка в summarize API:', error)
+    console.error('Ошибка создания аннотации:', error)
     
     if (error instanceof Error) {
       return NextResponse.json(
