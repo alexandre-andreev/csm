@@ -20,7 +20,7 @@ interface Summary {
 // Function to clean up duplicate titles in the summary
 function cleanSummaryText(summaryText: string, videoTitle: string): string {
   // Split the summary into lines
-  const lines = summaryText.split('\n').filter(line => line.trim() !== '');
+  let lines = summaryText.split('\n').filter(line => line.trim() !== '');
   
   // If the first line is similar to the video title, remove it
   if (lines.length > 0) {
@@ -32,11 +32,23 @@ function cleanSummaryText(summaryText: string, videoTitle: string): string {
         firstLine.startsWith(cleanVideoTitle) ||
         cleanVideoTitle.startsWith(firstLine)) {
       // Remove the first line and join the rest
-      return lines.slice(1).join('\n');
+      lines = lines.slice(1);
     }
   }
   
-  return summaryText;
+  // Also check for "Аннотация к видео" pattern and remove it if it contains the video title
+  if (lines.length > 0) {
+    const firstLine = lines[0].trim();
+    const cleanVideoTitle = videoTitle.trim();
+    
+    // Check if the first line starts with "Аннотация к видео" and contains the video title
+    if (firstLine.startsWith('Аннотация к видео') && firstLine.includes(cleanVideoTitle)) {
+      // Remove the first line and join the rest
+      lines = lines.slice(1);
+    }
+  }
+  
+  return lines.join('\n');
 }
 
 export default function DashboardPage() {
