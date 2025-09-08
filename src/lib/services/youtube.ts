@@ -33,7 +33,9 @@ export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideo
     })
 
     if (!response.ok) {
-      throw new Error(`Ошибка получения информации о видео: ${response.status}`)
+      const errorText = await response.text().catch(() => 'Не удалось прочитать тело ошибки');
+      console.error(`Ошибка от youtube-transcript.io (video info). Status: ${response.status}. Body: ${errorText}`);
+      throw new Error(`Ошибка получения информации о видео: ${response.status}`);
     }
 
     const data = await response.json()
@@ -45,6 +47,7 @@ export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideo
 
     const transcript = data.transcripts[0]
     if (!transcript) {
+      console.error('Не найден объект транскрипта в успешном ответе от youtube-transcript.io');
       throw new Error('Информация о видео не найдена')
     }
 
@@ -87,8 +90,8 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
     console.log('Ответ от youtube-transcript.io:', response.status, response.statusText)
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Ошибка ответа от youtube-transcript.io:', errorText)
+      const errorText = await response.text().catch(() => 'Не удалось прочитать тело ошибки');
+      console.error(`Ошибка от youtube-transcript.io (transcript). Status: ${response.status}. Body: ${errorText}`);
       
       if (response.status === 404) {
         throw new Error('Транскрипт недоступен для этого видео')
@@ -109,6 +112,7 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
     console.log('Первый транскрипт:', JSON.stringify(transcript, null, 2))
     
     if (!transcript || !transcript.transcript) {
+      console.error('В ответе от youtube-transcript.io отсутствует поле "transcript"');
       throw new Error('Транскрипт не найден для этого видео')
     }
 
