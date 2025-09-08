@@ -441,6 +441,7 @@ export default function DashboardPage() {
             ) : (
               <div style={{
                 display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                 gap: '1rem'
               }}>
                 {filteredSummaries.map((summary) => (
@@ -451,7 +452,10 @@ export default function DashboardPage() {
                       borderRadius: '0.75rem',
                       border: '1px solid #e5e7eb',
                       backgroundColor: '#f9fafb',
-                      transition: 'all 0.2s ease-in-out'
+                      transition: 'all 0.2s ease-in-out',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%'
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.borderColor = '#9333ea'
@@ -462,11 +466,10 @@ export default function DashboardPage() {
                       e.currentTarget.style.backgroundColor = '#f9fafb'
                     }}
                   >
-                    <div style={{
+                    <div style={{ 
+                      flex: 1,
                       display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      marginBottom: '1rem'
+                      flexDirection: 'column'
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
@@ -474,25 +477,35 @@ export default function DashboardPage() {
                           fontWeight: '600',
                           color: '#111827',
                           margin: '0 0 0.5rem 0',
-                          lineHeight: '1.4'
+                          lineHeight: '1.4',
+                          wordBreak: 'break-word'
                         }}>
                           {summary.video_title}
                         </h3>
                         <div style={{
                           fontSize: '0.875rem',
                           color: '#6b7280',
-                          margin: '0 0 0.5rem 0',
+                          margin: '0 0 1rem 0',
                           lineHeight: '1.5',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
                           wordBreak: 'break-word',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 4,
+                          WebkitBoxOrient: 'vertical'
                         }}>
                           <ReactMarkdown components={{ p: ({ children }) => <>{children}</> }}>
                             {summary.summary_text}
                           </ReactMarkdown>
                         </div>
+                      </div>
+                      
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                        marginTop: 'auto'
+                      }}>
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -504,17 +517,10 @@ export default function DashboardPage() {
                             {new Date(summary.created_at).toLocaleDateString('ru-RU')}
                           </span>
                           <span>
-                            {Math.round(summary.processing_time / 1000)}с обработки
+                            {Math.round(summary.processing_time / 1000)}с
                           </span>
                         </div>
-                      </div>
-                      
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        marginLeft: '1rem'
-                      }}>
+                        
                         <button
                           onClick={() => router.push(`/summary/${summary.id}`)}
                           style={{
@@ -524,7 +530,8 @@ export default function DashboardPage() {
                             backgroundColor: 'white',
                             color: '#374151',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease-in-out'
+                            transition: 'all 0.2s ease-in-out',
+                            flexShrink: 0
                           }}
                           onMouseOver={(e) => {
                             e.currentTarget.style.borderColor = '#9333ea'
