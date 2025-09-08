@@ -516,12 +516,8 @@ export default function DashboardPage() {
                           {summary.video_title}
                         </h3>
                         <div 
-                          className="prose prose-sm max-w-none"
+                          className="prose prose-sm max-w-none text-gray-600"
                           style={{
-                            fontSize: '0.875rem',
-                            color: '#6b7280',
-                            margin: '0 0 1rem 0',
-                            lineHeight: '1.5',
                             overflow: 'hidden',
                             wordBreak: 'break-word',
                             display: '-webkit-box',
