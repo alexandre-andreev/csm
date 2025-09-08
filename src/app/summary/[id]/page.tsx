@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Heart, Trash2, ExternalLink, Clock, Calendar, Sparkles } from 'lucide-react'
+import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 interface Summary {
@@ -11,7 +11,6 @@ interface Summary {
   youtube_url: string
   summary_text: string
   created_at: string
-  is_favorite: boolean
   processing_time: number
   channel_title?: string
   duration?: string
@@ -21,7 +20,6 @@ interface Summary {
 export default function SummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isUpdating, setIsUpdating] = useState(false)
   const [id, setId] = useState<string>('')
   const router = useRouter()
 
@@ -53,29 +51,6 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
       router.push('/dashboard')
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const toggleFavorite = async () => {
-    if (!summary) return
-
-    setIsUpdating(true)
-    try {
-      const response = await fetch(`/api/summaries/${summary.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_favorite: !summary.is_favorite }),
-      })
-
-      if (response.ok) {
-        setSummary(prev => prev ? { ...prev, is_favorite: !prev.is_favorite } : null)
-      }
-    } catch (error) {
-      console.error('Ошибка обновления избранного:', error)
-    } finally {
-      setIsUpdating(false)
     }
   }
 
@@ -219,42 +194,6 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            <button
-              onClick={toggleFavorite}
-              disabled={isUpdating}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: '1px solid #d1d5db',
-                backgroundColor: summary.is_favorite ? '#fef2f2' : 'transparent',
-                color: summary.is_favorite ? '#dc2626' : '#374151',
-                cursor: isUpdating ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s ease-in-out'
-              }}
-              onMouseOver={(e) => {
-                if (!isUpdating) {
-                  e.currentTarget.style.borderColor = '#dc2626'
-                  e.currentTarget.style.color = '#dc2626'
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isUpdating) {
-                  e.currentTarget.style.borderColor = '#d1d5db'
-                  e.currentTarget.style.color = summary.is_favorite ? '#dc2626' : '#374151'
-                }
-              }}
-            >
-              <Heart style={{ 
-                width: '1rem', 
-                height: '1rem',
-                fill: summary.is_favorite ? '#dc2626' : 'none'
-              }} />
-              {summary.is_favorite ? 'В избранном' : 'В избранное'}
-            </button>
-
             <button
               onClick={deleteSummary}
               style={{

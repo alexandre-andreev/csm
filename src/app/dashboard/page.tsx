@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, Heart, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3 } from 'lucide-react'
+import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
-import ProgressModal from '@/components/ui/ProgressModal'
 
 interface Summary {
   id: string
@@ -12,7 +11,6 @@ interface Summary {
   youtube_url: string
   summary_text: string
   created_at: string
-  is_favorite: boolean
   processing_time: number
   channel_title?: string
   duration?: string
@@ -25,8 +23,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [newUrl, setNewUrl] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [error, setError] = useState<string | null>(null)
+  const [progressText, setProgressText] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -52,15 +49,10 @@ export default function DashboardPage() {
     if (!newUrl.trim()) return
 
     setIsCreating(true)
-    setProgress(1)
-    setError(null)
-
-    // Simulate progress
-    const interval = setInterval(() => {
-      setProgress(p => (p < 4 ? p + 1 : p))
-    }, 2000) // Move to next step every 2s, stops at step 4
+    setProgressText('Шаг 1 из 4: Извлечение ID видео...')
 
     try {
+      setProgressText('Шаг 2 из 4: Получение транскрипта...')
       const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: {
@@ -68,26 +60,23 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({ url: newUrl }),
       })
-
-      clearInterval(interval) // Stop simulation
+      
+      setProgressText('Шаг 3 из 4: Генерация аннотации...')
       const result = await response.json()
 
       if (response.ok) {
-        setProgress(5) // Success
+        setProgressText('Шаг 4 из 4: Успешно! Перенаправление...')
         setSummaries(prev => [result, ...prev])
         setNewUrl('')
         setTimeout(() => {
           router.push(`/summary/${result.id}`)
-          setProgress(0) // Reset after redirect
-        }, 1000)
+          setProgressText('')
+        }, 1500)
       } else {
-        setError(result.error || 'Неизвестная ошибка')
-        setTimeout(() => setProgress(0), 3000)
+        setProgressText(`Ошибка: ${result.error || 'Неизвестная ошибка'}`)
       }
     } catch (err: any) {
-      clearInterval(interval)
-      setError(err.message || 'Произошла ошибка при создании аннотации')
-      setTimeout(() => setProgress(0), 3000)
+      setProgressText(`Ошибка: ${err.message || 'Произошла ошибка'}`)
     } finally {
       setIsCreating(false)
     }
@@ -107,12 +96,10 @@ export default function DashboardPage() {
     summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const favoriteCount = summaries.filter(s => s.is_favorite).length
   const totalProcessingTime = summaries.reduce((acc, s) => acc + s.processing_time, 0)
 
   return (
     <>
-      <ProgressModal progress={progress} error={error} />
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)'
@@ -195,8 +182,8 @@ export default function DashboardPage() {
           {/* Stats */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1.5rem',
             marginBottom: '2rem'
           }}>
             <div style={{
@@ -227,37 +214,6 @@ export default function DashboardPage() {
                 color: '#111827'
               }}>
                 {summaries.length}
-              </span>
-            </div>
-
-            <div style={{
-              background: 'white',
-              borderRadius: '1rem',
-              padding: '1.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                marginBottom: '0.5rem'
-              }}>
-                <Heart style={{ width: '1.25rem', height: '1.25rem', color: '#dc2626' }} />
-                <span style={{
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#6b7280'
-                }}>
-                  Избранные
-                </span>
-              </div>
-              <span style={{
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                color: '#111827'
-              }}>
-                {favoriteCount}
               </span>
             </div>
 
@@ -321,65 +277,81 @@ export default function DashboardPage() {
 
             <form onSubmit={handleCreateSummary} style={{
               display: 'flex',
+              flexDirection: 'column',
               gap: '1rem',
               marginTop: '1.5rem'
             }}>
-              <input
-                type="url"
-                value={newUrl}
-                onChange={(e) => setNewUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                required
-                style={{
-                  flex: 1,
-                  height: '3rem',
-                  padding: '0 1rem',
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <input
+                  type="url"
+                  value={newUrl}
+                  onChange={(e) => setNewUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  required
+                  style={{
+                    flex: 1,
+                    height: '3rem',
+                    padding: '0 1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: 'white',
+                    color: '#111827',
+                    transition: 'border-color 0.2s',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                />
+                <button
+                  type="submit"
+                  disabled={isCreating}
+                  style={{
+                    height: '3rem',
+                    padding: '0 2rem',
+                    borderRadius: '0.5rem',
+                    background: isCreating ? '#9ca3af' : 'linear-gradient(135deg, #9333ea, #3b82f6)',
+                    color: 'white',
+                    border: 'none',
+                    cursor: isCreating ? 'not-allowed' : 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease-in-out',
+                    transform: 'translateY(0)',
+                    boxShadow: '0 4px 6px -1px rgba(147, 51, 234, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isCreating) {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 8px 15px -3px rgba(147, 51, 234, 0.4)'
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isCreating) {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(147, 51, 234, 0.3)'
+                    }
+                  }}
+                >
+                  <Plus style={{ width: '1rem', height: '1rem' }} />
+                  {isCreating ? 'Создание...' : 'Создать'}
+                </button>
+              </div>
+              {progressText && (
+                <div style={{ 
+                  marginTop: '1rem', 
+                  padding: '0.75rem 1rem',
                   borderRadius: '0.5rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: 'white',
-                  color: '#111827',
-                  transition: 'border-color 0.2s',
-                  outline: 'none'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
-              />
-              <button
-                type="submit"
-                disabled={isCreating}
-                style={{
-                  height: '3rem',
-                  padding: '0 2rem',
-                  borderRadius: '0.5rem',
-                  background: isCreating ? '#9ca3af' : 'linear-gradient(135deg, #9333ea, #3b82f6)',
-                  color: 'white',
-                  border: 'none',
-                  cursor: isCreating ? 'not-allowed' : 'pointer',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  transition: 'all 0.2s ease-in-out',
-                  transform: 'translateY(0)',
-                  boxShadow: '0 4px 6px -1px rgba(147, 51, 234, 0.3)'
-                }}
-                onMouseOver={(e) => {
-                  if (!isCreating) {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 8px 15px -3px rgba(147, 51, 234, 0.4)'
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isCreating) {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(147, 51, 234, 0.3)'
-                  }
-                }}
-              >
-                <Plus style={{ width: '1rem', height: '1rem' }} />
-                {isCreating ? 'Создание...' : 'Создать'}
-              </button>
+                  backgroundColor: progressText.startsWith('Ошибка') ? '#fef2f2' : '#f0fdf4',
+                  color: progressText.startsWith('Ошибка') ? '#dc2626' : '#166534',
+                  textAlign: 'center',
+                  fontWeight: 500
+                }}>
+                  {progressText}
+                </div>
+              )}
             </form>
           </div>
 
