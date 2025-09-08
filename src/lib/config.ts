@@ -9,10 +9,7 @@ export const config = {
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   },
   gemini: {
-    apiKey: process.env.GEMINI_API_KEY!,
-  },
-  youtube: {
-    apiKey: process.env.YOUTUBE_API_KEY!,
+    apiKey: process.env.GOOGLE_GEMINI_API_KEY!,
   },
   transcript: {
     apiKey: process.env.TRANSCRIPT_API_KEY!,
@@ -23,8 +20,7 @@ export const config = {
 const requiredEnvVars = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'GEMINI_API_KEY',
-  'YOUTUBE_API_KEY',
+  'GOOGLE_GEMINI_API_KEY',
   'TRANSCRIPT_API_KEY',
 ]
 

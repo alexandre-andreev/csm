@@ -1,27 +1,60 @@
-// Временная заглушка для тестирования без API ключей
 export async function generateSummary(transcript: string, videoTitle: string): Promise<string> {
   console.log('Генерация аннотации для:', videoTitle)
   
-  // Возвращаем тестовую аннотацию
-  return `# Аннотация видео: ${videoTitle}
+  const apiKey = process.env.GOOGLE_GEMINI_API_KEY
+  if (!apiKey) {
+    throw new Error('API ключ для Gemini не настроен')
+  }
 
-## Краткое описание
-Это демонстрационная аннотация, созданная для тестирования функциональности приложения. В реальном приложении здесь будет ИИ-генерированная аннотация на основе транскрипта видео.
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Создай подробную аннотацию для YouTube видео "${videoTitle}" на основе следующего транскрипта. 
 
-## Основные моменты
-- **Технологии**: Приложение использует современные веб-технологии
-- **Функциональность**: Создание аннотаций YouTube видео с помощью ИИ
-- **Пользовательский интерфейс**: Интуитивно понятный и удобный дизайн
+Требования к аннотации:
+1. Используй формат Markdown
+2. Включи заголовок с названием видео
+3. Создай краткое описание (2-3 предложения)
+4. Выдели основные темы и ключевые моменты
+5. Добавь заключение
+6. Пиши на русском языке
+7. Будь информативным и структурированным
 
-## Ключевые особенности
-1. Автоматическое извлечение транскриптов
-2. ИИ-обработка контента
-3. Сохранение и управление аннотациями
-4. Поиск и фильтрация
+Транскрипт видео:
+${transcript}`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        }
+      })
+    })
 
-## Заключение
-Это тестовая аннотация, которая демонстрирует работу приложения. В реальном сценарии здесь будет содержательная аннотация, созданная на основе анализа транскрипта видео с помощью искусственного интеллекта.
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('Ошибка Gemini API:', errorData)
+      throw new Error(`Ошибка генерации аннотации: ${response.status}`)
+    }
 
----
-*Создано с помощью приложения "Аннотация видео"*`
+    const data = await response.json()
+    
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('Не удалось сгенерировать аннотацию')
+    }
+
+    const generatedText = data.candidates[0].content.parts[0].text
+    return generatedText
+  } catch (error) {
+    console.error('Ошибка генерации аннотации:', error)
+    throw error
+  }
 }
