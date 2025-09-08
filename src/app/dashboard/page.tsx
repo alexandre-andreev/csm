@@ -453,7 +453,8 @@ export default function DashboardPage() {
                       border: '1px solid #e5e7eb',
                       backgroundColor: '#f9fafb',
                       transition: 'all 0.2s ease-in-out',
-                      width: '100%'
+                      width: '100%',
+                      boxSizing: 'border-box'
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.borderColor = '#9333ea'
@@ -470,7 +471,7 @@ export default function DashboardPage() {
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
-                          fontSize: '1.125rem',
+                          fontSize: '1rem', // Reduced from 1.125rem to 1rem (2 sizes smaller)
                           fontWeight: '600',
                           color: '#111827',
                           margin: '0 0 0.5rem 0',
