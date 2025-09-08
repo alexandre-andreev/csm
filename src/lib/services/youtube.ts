@@ -32,19 +32,28 @@ export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideo
       })
     })
 
+    const responseText = await response.text();
     if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Не удалось прочитать тело ошибки');
-      console.error(`Ошибка от youtube-transcript.io (video info). Status: ${response.status}. Body: ${errorText}`);
+      console.error(`Ошибка от youtube-transcript.io (video info). Status: ${response.status}. Body: ${responseText}`);
       throw new Error(`Ошибка получения информации о видео: ${response.status}`);
     }
 
-    const data = await response.json()
-    console.log('Ответ от youtube-transcript.io для информации о видео:', JSON.stringify(data, null, 2))
-    
-    if (!data || !data.transcripts || data.transcripts.length === 0) {
-      throw new Error('Видео не найдено')
+    let data;
+    try {
+        data = JSON.parse(responseText);
+    } catch (jsonError) {
+        console.error('Не удалось распарсить JSON-ответ от youtube-transcript.io (video info).');
+        console.error('Сырое тело ответа:', responseText);
+        throw new Error('Сервер youtube-transcript.io вернул некорректный JSON.');
     }
 
+    console.log('Успешный сырой ответ от youtube-transcript.io (video info):', responseText);
+
+    if (!data || !data.transcripts || data.transcripts.length === 0) {
+      console.error('В успешном ответе от youtube-transcript.io отсутствует массив `transcripts`.');
+      throw new Error('Видео не найдено')
+    }
+    
     const transcript = data.transcripts[0]
     if (!transcript) {
       console.error('Не найден объект транскрипта в успешном ответе от youtube-transcript.io');
@@ -87,20 +96,25 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
       })
     })
 
-    console.log('Ответ от youtube-transcript.io:', response.status, response.statusText)
-
+    const responseText = await response.text();
     if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Не удалось прочитать тело ошибки');
-      console.error(`Ошибка от youtube-transcript.io (transcript). Status: ${response.status}. Body: ${errorText}`);
-      
+      console.error(`Ошибка от youtube-transcript.io (transcript). Status: ${response.status}. Body: ${responseText}`);
       if (response.status === 404) {
         throw new Error('Транскрипт недоступен для этого видео')
       }
-      throw new Error(`Ошибка получения транскрипта: ${response.status} - ${errorText}`)
+      throw new Error(`Ошибка получения транскрипта: ${response.status} - ${responseText}`)
     }
 
-    const data = await response.json()
-    console.log('Ответ от youtube-transcript.io:', JSON.stringify(data, null, 2))
+    let data;
+    try {
+        data = JSON.parse(responseText);
+    } catch (jsonError) {
+        console.error('Не удалось распарсить JSON-ответ от youtube-transcript.io (transcript).');
+        console.error('Сырое тело ответа:', responseText);
+        throw new Error('Сервер youtube-transcript.io вернул некорректный JSON.');
+    }
+
+    console.log('Успешный сырой ответ от youtube-transcript.io (transcript):', responseText);
     
     if (!data || !data.transcripts || data.transcripts.length === 0) {
       console.log('Транскрипт не найден в ответе:', data)
