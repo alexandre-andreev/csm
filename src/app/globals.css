@@ -69,7 +69,7 @@
   .dashboard-summary .prose h4,
   .dashboard-summary .prose h5,
   .dashboard-summary .prose h6 {
-    @apply text-gray-700 font-semibold mt-2 mb-1;
+    @apply text-gray-700 font-semibold mt-1 mb-1 text-sm;
   }
   .dashboard-summary .prose p {
     @apply mb-2;
