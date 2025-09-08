@@ -440,8 +440,8 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                display: 'flex',
+                flexDirection: 'column',
                 gap: '1rem'
               }}>
                 {filteredSummaries.map((summary) => (
@@ -453,9 +453,7 @@ export default function DashboardPage() {
                       border: '1px solid #e5e7eb',
                       backgroundColor: '#f9fafb',
                       transition: 'all 0.2s ease-in-out',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%'
+                      width: '100%'
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.borderColor = '#9333ea'
@@ -467,7 +465,6 @@ export default function DashboardPage() {
                     }}
                   >
                     <div style={{ 
-                      flex: 1,
                       display: 'flex',
                       flexDirection: 'column'
                     }}>
