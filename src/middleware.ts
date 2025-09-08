@@ -1,8 +1,7 @@
-// import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: Request) {
-  // Временно отключаем аутентификацию для тестирования
-  return
+  return await updateSession(request)
 }
 
 export const config = {

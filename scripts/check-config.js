@@ -7,8 +7,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 const requiredEnvVars = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'GEMINI_API_KEY',
-  'YOUTUBE_API_KEY',
+  'GOOGLE_GEMINI_API_KEY',
   'TRANSCRIPT_API_KEY',
 ]
 
@@ -33,8 +32,7 @@ if (allGood) {
   console.log('\n📋 Инструкции по получению API ключей:')
   console.log('1. Supabase: https://supabase.com/dashboard')
   console.log('2. Google Gemini: https://makersuite.google.com/app/apikey')
-  console.log('3. YouTube Data API: https://console.developers.google.com/')
-  console.log('4. YouTube Transcript: https://www.youtube-transcript.io/profile')
+  console.log('3. YouTube Transcript: https://www.youtube-transcript.io/profile')
 } else {
   console.log('⚠️  Некоторые переменные окружения не настроены!')
   console.log('\n📝 Создайте файл .env.local в корне проекта и добавьте:')
