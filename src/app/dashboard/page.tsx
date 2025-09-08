@@ -478,7 +478,7 @@ export default function DashboardPage() {
                         }}>
                           {summary.video_title}
                         </h3>
-                        <p style={{
+                        <div style={{
                           fontSize: '0.875rem',
                           color: '#6b7280',
                           margin: '0 0 0.5rem 0',
@@ -486,12 +486,13 @@ export default function DashboardPage() {
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
+                          wordBreak: 'break-word',
                         }}>
-                          <div className="prose prose-sm">
-                            <ReactMarkdown>{summary.summary_text}</ReactMarkdown>
-                          </div>
-                        </p>
+                          <ReactMarkdown components={{ p: ({ children }) => <>{children}</> }}>
+                            {summary.summary_text}
+                          </ReactMarkdown>
+                        </div>
                         <div style={{
                           display: 'flex',
                           alignItems: 'center',
