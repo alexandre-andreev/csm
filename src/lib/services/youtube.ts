@@ -71,6 +71,8 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
   }
 
   try {
+    console.log('Отправка запроса к youtube-transcript.io с API ключом:', apiKey.substring(0, 10) + '...')
+    
     const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
       method: 'POST',
       headers: {
@@ -82,11 +84,16 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
       })
     })
 
+    console.log('Ответ от youtube-transcript.io:', response.status, response.statusText)
+
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Ошибка ответа от youtube-transcript.io:', errorText)
+      
       if (response.status === 404) {
         throw new Error('Транскрипт недоступен для этого видео')
       }
-      throw new Error(`Ошибка получения транскрипта: ${response.status}`)
+      throw new Error(`Ошибка получения транскрипта: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
