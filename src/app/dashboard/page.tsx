@@ -41,8 +41,8 @@ function cleanSummaryText(summaryText: string, videoTitle: string): string {
     const firstLine = lines[0].trim();
     const cleanVideoTitle = videoTitle.trim();
     
-    // Check if the first line starts with "Аннотация к видео" and contains the video title
-    if (firstLine.startsWith('Аннотация к видео') && firstLine.includes(cleanVideoTitle)) {
+    // Check if the first line starts with "Аннотация к видео" (with or without colon) and contains the video title
+    if ((firstLine.startsWith('Аннотация к видео') || firstLine.startsWith('Аннотация к видео:')) && firstLine.includes(cleanVideoTitle)) {
       // Remove the first line and join the rest
       lines = lines.slice(1);
     }
