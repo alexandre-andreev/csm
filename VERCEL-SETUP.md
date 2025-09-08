@@ -10,14 +10,9 @@ NEXT_PUBLIC_SUPABASE_URL=ваш_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_supabase_anon_key
 ```
 
-### Google Gemini API
+### Google Gemini AI API
 ```
-GEMINI_API_KEY=ваш_gemini_api_key
-```
-
-### YouTube Data API
-```
-YOUTUBE_API_KEY=ваш_youtube_api_key
+GOOGLE_GEMINI_API_KEY=ваш_google_gemini_api_key
 ```
 
 ### YouTube Transcript API
@@ -29,8 +24,7 @@ TRANSCRIPT_API_KEY=ваш_transcript_api_key
 
 1. **Supabase**: Получите URL и Anon Key из настроек проекта Supabase
 2. **Google Gemini**: Получите API ключ из Google AI Studio
-3. **YouTube Data API**: Создайте проект в Google Cloud Console и включите YouTube Data API v3
-4. **YouTube Transcript API**: Получите API ключ с https://www.youtube-transcript.io/
+3. **YouTube Transcript API**: Получите API ключ с https://www.youtube-transcript.io/
 
 ## Важные замечания
 
