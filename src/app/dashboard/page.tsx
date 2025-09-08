@@ -555,6 +555,7 @@ export default function DashboardPage() {
                         
                         <button
                           onClick={() => router.push(`/summary/${summary.id}`)}
+                          title="Просмотреть полную аннотацию"
                           style={{
                             padding: '0.5rem',
                             borderRadius: '0.375rem',
