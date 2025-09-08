@@ -246,7 +246,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
           }}>
             <div style={{ flex: 1 }}>
               <h1 style={{
-                fontSize: '1.5rem',
+                fontSize: '1.25rem',
                 fontWeight: 'bold',
                 color: '#111827',
                 margin: '0 0 1rem 0',
@@ -333,7 +333,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
           border: '1px solid rgba(255, 255, 255, 0.2)'
         }}>
           <h2 style={{
-            fontSize: '1.25rem',
+            fontSize: '1rem', // Reduced from 1.25rem to 1rem (2 sizes smaller)
             fontWeight: 'bold',
             color: '#111827',
             margin: '0 0 1.5rem 0',

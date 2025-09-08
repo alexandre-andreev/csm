@@ -128,17 +128,19 @@ export default function HomePage() {
         <div style={{
           maxWidth: '1000px',
           margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          width: '100%'
+          width: '100%',
+          gap: '2rem'
         }}>
-          {/* Left Column - Text Content */}
+          {/* Centered Content */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '2rem'
+            gap: '2rem',
+            alignItems: 'center',
+            textAlign: 'center'
           }}>
             <div style={{
               display: 'inline-flex',
@@ -182,7 +184,8 @@ export default function HomePage() {
               fontSize: '1rem',
               color: 'rgba(255, 255, 255, 0.8)',
               lineHeight: '1.5',
-              margin: 0
+              margin: 0,
+              maxWidth: '600px'
             }}>
               Превращайте длинные видео в краткие, информативные аннотации с помощью искусственного интеллекта. Экономьте время и получайте ключевую информацию за секунды.
             </p>
@@ -284,86 +287,6 @@ export default function HomePage() {
                   Довольных пользователей
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Right Column - Visual */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            <div style={{
-              width: '300px',
-              height: '400px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '1.5rem',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              padding: '1.5rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1rem',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              {/* Decorative elements */}
-              <div style={{
-                position: 'absolute',
-                top: '-50px',
-                right: '-50px',
-                width: '100px',
-                height: '100px',
-                background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
-                borderRadius: '50%',
-                opacity: 0.3
-              }} />
-              <div style={{
-                position: 'absolute',
-                bottom: '-30px',
-                left: '-30px',
-                width: '60px',
-                height: '60px',
-                background: 'linear-gradient(45deg, #ffd700, #ff6b6b)',
-                borderRadius: '50%',
-                opacity: 0.4
-              }} />
-
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem'
-              }}>
-                <Sparkles style={{ width: '2rem', height: '2rem', color: 'white' }} />
-              </div>
-
-              <div style={{
-                width: '120px',
-                height: '120px',
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
-              }}>
-                <Play style={{ width: '2rem', height: '2rem', color: 'white' }} />
-              </div>
-
-              <div style={{
-                width: '100%',
-                height: '2px',
-                background: 'linear-gradient(90deg, transparent, #ff6b6b, #4ecdc4, transparent)',
-                marginTop: '1rem'
-              }} />
             </div>
           </div>
         </div>
