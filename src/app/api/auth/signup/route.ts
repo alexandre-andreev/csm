@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          name: name, // Передаем имя в метаданные
+        },
+      },
     })
 
     if (error) {
