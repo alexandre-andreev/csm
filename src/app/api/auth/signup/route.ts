@@ -36,20 +36,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (data.user) {
-      // Создаем запись пользователя в таблице users
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert({
-          id: data.user.id,
-          email: data.user.email!,
-          name: name,
-        })
+      // Запись пользователя создается автоматически триггером в базе данных,
+      // поэтому этот блок кода на стороне сервера больше не нужен.
+      // Он вызывал конфликт с триггером.
+      // 
+      // // Создаем запись пользователя в таблице users
+      // const { error: insertError } = await supabase
+      //   .from('users')
+      //   .insert({
+      //     id: data.user.id,
+      //     email: data.user.email!,
+      //     name: name,
+      //   })
 
-      if (insertError) {
-        console.error('Ошибка создания пользователя:', insertError)
-        // Пользователь уже зарегистрирован в auth, но не в users
-        // Это не критическая ошибка
-      }
+      // if (insertError) {
+      //   console.error('Ошибка создания пользователя:', insertError)
+      //   // Пользователь уже зарегистрирован в auth, но не в users
+      //   // Это не критическая ошибка
+      // }
     }
 
     return NextResponse.json({ user: data.user })
