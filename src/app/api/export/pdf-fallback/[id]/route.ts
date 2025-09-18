@@ -33,7 +33,7 @@ export async function GET(
       )
     }
 
-    const date = new Date().toISOString().split('T')[0]
+    const date = new Date()
     const fileName = generatePDFFileName(summary.video_title, date)
 
     // Простой текстовый PDF с помощью jspdf
