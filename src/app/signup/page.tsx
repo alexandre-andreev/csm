@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserPlus, Mail, Lock, User, ArrowLeft, Sparkles } from 'lucide-react'
+import ThemeToggle from '@/components/ui/ThemeToggle'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ export default function SignupPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const { theme } = useTheme()
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +66,9 @@ export default function SignupPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
+      background: theme === 'dark' 
+        ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
+        : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -72,16 +77,27 @@ export default function SignupPage() {
       <div style={{
         width: '100%',
         maxWidth: '400px',
-        background: 'white',
+        background: theme === 'dark' ? '#1e293b' : 'white',
         borderRadius: '1rem',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        padding: '2rem'
+        boxShadow: theme === 'dark' 
+          ? '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
+          : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        padding: '2rem',
+        border: theme === 'dark' ? '1px solid #475569' : 'none'
       }}>
         {/* Header */}
         <div style={{
           textAlign: 'center',
-          marginBottom: '2rem'
+          marginBottom: '2rem',
+          position: 'relative'
         }}>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: 0
+          }}>
+            <ThemeToggle />
+          </div>
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -114,14 +130,16 @@ export default function SignupPage() {
             fontSize: '1.875rem',
             fontWeight: 'bold',
             marginBottom: '0.5rem',
-            margin: 0
+            margin: 0,
+            color: theme === 'dark' ? '#f1f5f9' : '#111827'
           }}>
             Создать аккаунт
           </h1>
           <p style={{
             opacity: 0.9,
             fontSize: '1rem',
-            margin: 0
+            margin: 0,
+            color: theme === 'dark' ? '#94a3b8' : '#6b7280'
           }}>
             Зарегистрируйтесь, чтобы начать создавать аннотации
           </p>
@@ -137,8 +155,8 @@ export default function SignupPage() {
             <div style={{
               padding: '0.75rem',
               borderRadius: '0.5rem',
-              backgroundColor: '#fef2f2',
-              border: '1px solid #fecaca',
+              backgroundColor: theme === 'dark' ? '#7f1d1d' : '#fef2f2',
+              border: theme === 'dark' ? '1px solid #991b1b' : '1px solid #fecaca',
               color: '#dc2626',
               fontSize: '0.875rem'
             }}>
@@ -154,7 +172,7 @@ export default function SignupPage() {
             <label htmlFor="name" style={{
               fontSize: '0.875rem',
               fontWeight: '500',
-              color: '#374151',
+              color: theme === 'dark' ? '#f1f5f9' : '#374151',
               marginBottom: '0.5rem'
             }}>
               Имя
@@ -184,15 +202,15 @@ export default function SignupPage() {
                   height: '3rem',
                   padding: '0 1rem 0 2.5rem',
                   borderRadius: '0.375rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: 'white',
-                  color: '#111827',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                  color: theme === 'dark' ? '#f1f5f9' : '#111827',
                   transition: 'border-color 0.2s',
                   outline: 'none',
                   boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
               />
             </div>
           </div>
@@ -205,7 +223,7 @@ export default function SignupPage() {
             <label htmlFor="email" style={{
               fontSize: '0.875rem',
               fontWeight: '500',
-              color: '#374151',
+              color: theme === 'dark' ? '#f1f5f9' : '#374151',
               marginBottom: '0.5rem'
             }}>
               Адрес электронной почты
@@ -235,15 +253,15 @@ export default function SignupPage() {
                   height: '3rem',
                   padding: '0 1rem 0 2.5rem',
                   borderRadius: '0.375rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: 'white',
-                  color: '#111827',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                  color: theme === 'dark' ? '#f1f5f9' : '#111827',
                   transition: 'border-color 0.2s',
                   outline: 'none',
                   boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
               />
             </div>
           </div>
@@ -256,7 +274,7 @@ export default function SignupPage() {
             <label htmlFor="password" style={{
               fontSize: '0.875rem',
               fontWeight: '500',
-              color: '#374151',
+              color: theme === 'dark' ? '#f1f5f9' : '#374151',
               marginBottom: '0.5rem'
             }}>
               Пароль
@@ -286,15 +304,15 @@ export default function SignupPage() {
                   height: '3rem',
                   padding: '0 1rem 0 2.5rem',
                   borderRadius: '0.375rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: 'white',
-                  color: '#111827',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                  color: theme === 'dark' ? '#f1f5f9' : '#111827',
                   transition: 'border-color 0.2s',
                   outline: 'none',
                   boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
               />
             </div>
           </div>
@@ -307,7 +325,7 @@ export default function SignupPage() {
             <label htmlFor="confirmPassword" style={{
               fontSize: '0.875rem',
               fontWeight: '500',
-              color: '#374151',
+              color: theme === 'dark' ? '#f1f5f9' : '#374151',
               marginBottom: '0.5rem'
             }}>
               Подтвердите пароль
@@ -337,15 +355,15 @@ export default function SignupPage() {
                   height: '3rem',
                   padding: '0 1rem 0 2.5rem',
                   borderRadius: '0.375rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: 'white',
-                  color: '#111827',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                  color: theme === 'dark' ? '#f1f5f9' : '#111827',
                   transition: 'border-color 0.2s',
                   outline: 'none',
                   boxSizing: 'border-box'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
               />
             </div>
           </div>
@@ -395,11 +413,11 @@ export default function SignupPage() {
           marginTop: '2rem',
           textAlign: 'center',
           paddingTop: '1.5rem',
-          borderTop: '1px solid #e5e7eb'
+          borderTop: theme === 'dark' ? '1px solid #475569' : '1px solid #e5e7eb'
         }}>
           <p style={{
             fontSize: '0.875rem',
-            color: '#6b7280',
+            color: theme === 'dark' ? '#94a3b8' : '#6b7280',
             margin: 0
           }}>
             Уже есть аккаунт?{' '}
@@ -427,9 +445,9 @@ export default function SignupPage() {
               margin: '1rem auto 0',
               padding: '0.5rem 1rem',
               borderRadius: '0.375rem',
-              border: '1px solid #d1d5db',
+              border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
               backgroundColor: 'transparent',
-              color: '#6b7280',
+              color: theme === 'dark' ? '#94a3b8' : '#6b7280',
               cursor: 'pointer',
               fontSize: '0.875rem',
               transition: 'all 0.2s ease-in-out'
@@ -439,8 +457,8 @@ export default function SignupPage() {
               e.currentTarget.style.color = '#9333ea'
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = '#d1d5db'
-              e.currentTarget.style.color = '#6b7280'
+              e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
+              e.currentTarget.style.color = theme === 'dark' ? '#94a3b8' : '#6b7280'
             }}
           >
             <ArrowLeft style={{ width: '1rem', height: '1rem' }} />

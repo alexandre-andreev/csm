@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3 } from 'lucide-react'
+import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText, File } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import ProgressBar from '@/components/ui/ProgressBar'
+import ThemeToggle from '@/components/ui/ThemeToggle'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface Summary {
   id: string
@@ -58,6 +61,9 @@ export default function DashboardPage() {
   const [newUrl, setNewUrl] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [progressText, setProgressText] = useState('')
+  const [progress, setProgress] = useState(0)
+  const [showProgressBar, setShowProgressBar] = useState(false)
+  const { theme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
@@ -83,10 +89,18 @@ export default function DashboardPage() {
     if (!newUrl.trim()) return
 
     setIsCreating(true)
+    setShowProgressBar(true)
+    setProgress(0)
     setProgressText('Шаг 1 из 4: Извлечение ID видео...')
 
     try {
+      // Шаг 1: Извлечение ID видео (10%)
+      setProgress(10)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       setProgressText('Шаг 2 из 4: Получение транскрипта...')
+      setProgress(25)
+      
       const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: {
@@ -96,21 +110,29 @@ export default function DashboardPage() {
       })
       
       setProgressText('Шаг 3 из 4: Генерация аннотации...')
+      setProgress(60)
+      
       const result = await response.json()
 
       if (response.ok) {
         setProgressText('Шаг 4 из 4: Успешно! Перенаправление...')
+        setProgress(90)
+        
         setSummaries(prev => [result, ...prev])
         setNewUrl('')
-        setTimeout(() => {
-          router.push(`/summary/${result.id}`)
-          setProgressText('')
-        }, 1500)
+        
+        setProgress(100)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        setShowProgressBar(false)
+        router.push(`/summary/${result.id}`)
       } else {
         setProgressText(`Ошибка: ${result.error || 'Неизвестная ошибка'}`)
+        setShowProgressBar(false)
       }
     } catch (err: any) {
       setProgressText(`Ошибка: ${err.message || 'Произошла ошибка'}`)
+      setShowProgressBar(false)
     } finally {
       setIsCreating(false)
     }
@@ -125,25 +147,95 @@ export default function DashboardPage() {
     }
   }
 
+  const exportToMarkdown = async (summaryId: string) => {
+    try {
+      const response = await fetch(`/api/export/markdown/${summaryId}`)
+      
+      if (response.ok) {
+        // Получаем имя файла из заголовка Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        const fileName = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+          : `annotation_${summaryId}.md`
+
+        // Создаем blob и скачиваем файл
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } else {
+        console.error('Ошибка экспорта в Markdown')
+      }
+    } catch (error) {
+      console.error('Ошибка экспорта в Markdown:', error)
+    }
+  }
+
+  const exportToPDF = async (summaryId: string) => {
+    try {
+      const response = await fetch(`/api/export/pdf-v2/${summaryId}`)
+      
+      if (response.ok) {
+        // Получаем имя файла из заголовка Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        const fileName = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+          : `annotation_${summaryId}.pdf`
+
+        // Создаем blob и скачиваем файл
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } else {
+        console.error('Ошибка экспорта в PDF')
+      }
+    } catch (error) {
+      console.error('Ошибка экспорта в PDF:', error)
+    }
+  }
+
   const filteredSummaries = summaries.filter(summary =>
     summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const totalProcessingTime = summaries.reduce((acc, s) => acc + s.processing_time, 0)
+  const averageProcessingTime = summaries.length > 0 ? Math.round(totalProcessingTime / summaries.length / 1000) : 0
 
   return (
     <>
+      <ProgressBar 
+        progress={progress} 
+        text={progressText} 
+        isVisible={showProgressBar} 
+      />
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)'
+        background: theme === 'dark' 
+          ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
+          : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)'
       }}>
         {/* Navigation */}
         <nav style={{
-          background: 'rgba(255, 255, 255, 0.8)',
+          background: theme === 'dark' 
+            ? 'rgba(30, 41, 59, 0.8)' 
+            : 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          borderBottom: theme === 'dark' 
+            ? '1px solid rgba(71, 85, 105, 0.3)' 
+            : '1px solid rgba(255, 255, 255, 0.2)',
           padding: '1rem 0'
         }}>
           <div style={{
@@ -173,38 +265,46 @@ export default function DashboardPage() {
               <span style={{
                 fontSize: '1.25rem',
                 fontWeight: 'bold',
-                color: '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827'
               }}>
                 Аннотация видео
               </span>
             </div>
 
-            <button
-              onClick={handleLogout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: '1px solid #d1d5db',
-                backgroundColor: 'transparent',
-                color: '#374151',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.borderColor = '#dc2626'
-                e.currentTarget.style.color = '#dc2626'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.borderColor = '#d1d5db'
-                e.currentTarget.style.color = '#374151'
-              }}
-            >
-              <LogOut style={{ width: '1rem', height: '1rem' }} />
-              Выйти
-            </button>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <ThemeToggle />
+              
+              <button
+                onClick={handleLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: 'transparent',
+                  color: theme === 'dark' ? '#fbbf24' : '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = '#dc2626'
+                  e.currentTarget.style.color = '#dc2626'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
+                  e.currentTarget.style.color = theme === 'dark' ? '#fbbf24' : '#374151'
+                }}
+              >
+                <LogOut style={{ width: '1rem', height: '1rem' }} />
+                Выйти
+              </button>
+            </div>
           </div>
         </nav>
 
@@ -221,11 +321,15 @@ export default function DashboardPage() {
             marginBottom: '2rem'
           }}>
             <div style={{
-              background: 'white',
+              background: theme === 'dark' ? '#1e293b' : 'white',
               borderRadius: '1rem',
               padding: '1.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              boxShadow: theme === 'dark' 
+                ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+                : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              border: theme === 'dark' 
+                ? '1px solid #475569' 
+                : '1px solid rgba(255, 255, 255, 0.2)'
             }}>
               <div style={{
                 display: 'flex',
@@ -237,7 +341,7 @@ export default function DashboardPage() {
                 <span style={{
                   fontSize: '0.875rem',
                   fontWeight: '500',
-                  color: '#6b7280'
+                  color: theme === 'dark' ? '#94a3b8' : '#6b7280'
                 }}>
                   Всего аннотаций
                 </span>
@@ -245,18 +349,22 @@ export default function DashboardPage() {
               <span style={{
                 fontSize: '2rem',
                 fontWeight: 'bold',
-                color: '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827'
               }}>
                 {summaries.length}
               </span>
             </div>
 
             <div style={{
-              background: 'white',
+              background: theme === 'dark' ? '#1e293b' : 'white',
               borderRadius: '1rem',
               padding: '1.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              boxShadow: theme === 'dark' 
+                ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+                : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              border: theme === 'dark' 
+                ? '1px solid #475569' 
+                : '1px solid rgba(255, 255, 255, 0.2)'
             }}>
               <div style={{
                 display: 'flex',
@@ -268,42 +376,47 @@ export default function DashboardPage() {
                 <span style={{
                   fontSize: '0.875rem',
                   fontWeight: '500',
-                  color: '#6b7280'
+                  color: theme === 'dark' ? '#94a3b8' : '#6b7280'
                 }}>
-                  Время обработки
+                  Среднее время обработки
                 </span>
               </div>
               <span style={{
                 fontSize: '2rem',
                 fontWeight: 'bold',
-                color: '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827'
               }}>
-                {Math.round(totalProcessingTime / 1000)}с
+                {averageProcessingTime}с
               </span>
             </div>
           </div>
 
           {/* Create New Summary */}
           <div style={{
-            background: 'white',
+            background: theme === 'dark' ? '#1e293b' : 'white',
             borderRadius: '1rem',
             padding: '2rem',
             marginBottom: '2rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
+            boxShadow: theme === 'dark' 
+              ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            border: theme === 'dark' 
+              ? '1px solid #475569' 
+              : '1px solid rgba(255, 255, 255, 0.2)'
           }}>
             <h2 style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              margin: 0
+              margin: 0,
+              color: theme === 'dark' ? '#f1f5f9' : '#111827'
             }}>
               <Plus style={{ width: '1.25rem', height: '1.25rem', color: '#9333ea' }} />
               Создать новую аннотацию
             </h2>
             <p style={{
               fontSize: '0.875rem',
-              color: '#6b7280',
+              color: theme === 'dark' ? '#94a3b8' : '#6b7280',
               margin: '0.5rem 0 0 0'
             }}>
               Введите ссылку на YouTube для создания ИИ-аннотации
@@ -327,14 +440,14 @@ export default function DashboardPage() {
                     height: '3rem',
                     padding: '0 1rem',
                     borderRadius: '0.5rem',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: 'white',
-                    color: '#111827',
+                    border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                    backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                    color: theme === 'dark' ? '#f1f5f9' : '#111827',
                     transition: 'border-color 0.2s',
                     outline: 'none'
                   }}
                   onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
                 />
                 <button
                   type="submit"
@@ -373,29 +486,20 @@ export default function DashboardPage() {
                   {isCreating ? 'Создание...' : 'Создать'}
                 </button>
               </div>
-              {progressText && (
-                <div style={{ 
-                  marginTop: '1rem', 
-                  padding: '0.75rem 1rem',
-                  borderRadius: '0.5rem',
-                  backgroundColor: progressText.startsWith('Ошибка') ? '#fef2f2' : '#f0fdf4',
-                  color: progressText.startsWith('Ошибка') ? '#dc2626' : '#166534',
-                  textAlign: 'center',
-                  fontWeight: 500
-                }}>
-                  {progressText}
-                </div>
-              )}
             </form>
           </div>
 
           {/* Summaries List */}
           <div style={{
-            background: 'white',
+            background: theme === 'dark' ? '#1e293b' : 'white',
             borderRadius: '1rem',
             padding: '2rem',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
+            boxShadow: theme === 'dark' 
+              ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            border: theme === 'dark' 
+              ? '1px solid #475569' 
+              : '1px solid rgba(255, 255, 255, 0.2)'
           }}>
             <div style={{
               display: 'flex',
@@ -407,7 +511,7 @@ export default function DashboardPage() {
                 margin: 0,
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                color: '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827'
               }}>
                 Ваши аннотации
               </h2>
@@ -439,14 +543,14 @@ export default function DashboardPage() {
                       height: '2.5rem',
                       padding: '0 1rem 0 2.5rem',
                       borderRadius: '0.5rem',
-                      border: '1px solid #d1d5db',
-                      backgroundColor: 'white',
-                      color: '#111827',
+                      border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                      backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                      color: theme === 'dark' ? '#f1f5f9' : '#111827',
                       transition: 'border-color 0.2s',
                       outline: 'none'
                     }}
                     onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
                   />
                 </div>
               </div>
@@ -485,19 +589,19 @@ export default function DashboardPage() {
                     style={{
                       padding: '1.5rem',
                       borderRadius: '0.75rem',
-                      border: '1px solid #e5e7eb',
-                      backgroundColor: '#f9fafb',
+                      border: theme === 'dark' ? '1px solid #475569' : '1px solid #e5e7eb',
+                      backgroundColor: theme === 'dark' ? '#334155' : '#f9fafb',
                       transition: 'all 0.2s ease-in-out',
                       width: '100%',
                       boxSizing: 'border-box'
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.borderColor = '#9333ea'
-                      e.currentTarget.style.backgroundColor = '#faf5ff'
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? '#475569' : '#faf5ff'
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.borderColor = '#e5e7eb'
-                      e.currentTarget.style.backgroundColor = '#f9fafb'
+                      e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#e5e7eb'
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? '#334155' : '#f9fafb'
                     }}
                   >
                     <div style={{ 
@@ -508,7 +612,7 @@ export default function DashboardPage() {
                         <h3 style={{
                           fontSize: '1.125rem', // Increased from 1rem to 1.125rem (1 size larger)
                           fontWeight: '600',
-                          color: '#111827',
+                          color: theme === 'dark' ? '#f1f5f9' : '#111827',
                           margin: '0 0 0.5rem 0',
                           lineHeight: '1.4',
                           wordBreak: 'break-word'
@@ -516,13 +620,14 @@ export default function DashboardPage() {
                           {summary.video_title}
                         </h3>
                         <div 
-                          className="prose prose-sm max-w-none text-gray-600"
+                          className="prose prose-sm max-w-none"
                           style={{
                             overflow: 'hidden',
                             wordBreak: 'break-word',
                             display: '-webkit-box',
                             WebkitLineClamp: 4,
-                            WebkitBoxOrient: 'vertical'
+                            WebkitBoxOrient: 'vertical',
+                            color: theme === 'dark' ? '#cbd5e1' : '#6b7280'
                           }}
                         >
                           <ReactMarkdown>
@@ -543,7 +648,7 @@ export default function DashboardPage() {
                           alignItems: 'center',
                           gap: '1rem',
                           fontSize: '0.75rem',
-                          color: '#9ca3af'
+                          color: theme === 'dark' ? '#94a3b8' : '#9ca3af'
                         }}>
                           <span>
                             {new Date(summary.created_at).toLocaleDateString('ru-RU')}
@@ -553,30 +658,102 @@ export default function DashboardPage() {
                           </span>
                         </div>
                         
-                        <button
-                          onClick={() => router.push(`/summary/${summary.id}`)}
-                          title="Просмотреть полную аннотацию"
-                          style={{
-                            padding: '0.5rem',
-                            borderRadius: '0.375rem',
-                            border: '1px solid #d1d5db',
-                            backgroundColor: 'white',
-                            color: '#374151',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease-in-out',
-                            flexShrink: 0
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.borderColor = '#9333ea'
-                            e.currentTarget.style.color = '#9333ea'
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.borderColor = '#d1d5db'
-                            e.currentTarget.style.color = '#374151'
-                          }}
-                        >
-                          <Eye style={{ width: '1rem', height: '1rem' }} />
-                        </button>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          <button
+                            onClick={() => exportToMarkdown(summary.id)}
+                            title="Экспортировать в Markdown"
+                            style={{
+                              padding: '0.5rem',
+                              borderRadius: '0.375rem',
+                              border: '1px solid #3b82f6',
+                              backgroundColor: theme === 'dark' ? '#1e3a8a' : '#eff6ff',
+                              color: '#3b82f6',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease-in-out',
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              fontSize: '0.75rem',
+                              fontWeight: '500'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#2563eb'
+                              e.currentTarget.style.backgroundColor = '#dbeafe'
+                              e.currentTarget.style.transform = 'translateY(-1px)'
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = '#3b82f6'
+                              e.currentTarget.style.backgroundColor = '#eff6ff'
+                              e.currentTarget.style.transform = 'translateY(0)'
+                            }}
+                          >
+                            <FileText style={{ width: '0.875rem', height: '0.875rem' }} />
+                            MD
+                          </button>
+                          
+                          <button
+                            onClick={() => exportToPDF(summary.id)}
+                            title="Экспортировать в PDF"
+                            style={{
+                              padding: '0.5rem',
+                              borderRadius: '0.375rem',
+                              border: '1px solid #dc2626',
+                              backgroundColor: theme === 'dark' ? '#7f1d1d' : '#fef2f2',
+                              color: '#dc2626',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease-in-out',
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              fontSize: '0.75rem',
+                              fontWeight: '500'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#b91c1c'
+                              e.currentTarget.style.backgroundColor = '#fee2e2'
+                              e.currentTarget.style.transform = 'translateY(-1px)'
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = '#dc2626'
+                              e.currentTarget.style.backgroundColor = '#fef2f2'
+                              e.currentTarget.style.transform = 'translateY(0)'
+                            }}
+                          >
+                            <File style={{ width: '0.875rem', height: '0.875rem' }} />
+                            PDF
+                          </button>
+                          
+                          <button
+                            onClick={() => router.push(`/summary/${summary.id}`)}
+                            title="Просмотреть полную аннотацию"
+                            style={{
+                              padding: '0.5rem',
+                              borderRadius: '0.375rem',
+                              border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                              backgroundColor: theme === 'dark' ? '#1e293b' : 'white',
+                              color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease-in-out',
+                              flexShrink: 0
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#9333ea'
+                              e.currentTarget.style.color = '#9333ea'
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
+                              e.currentTarget.style.color = theme === 'dark' ? '#f1f5f9' : '#374151'
+                            }}
+                          >
+                            <Eye style={{ width: '1rem', height: '1rem' }} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

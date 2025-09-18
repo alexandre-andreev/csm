@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles } from 'lucide-react'
+import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText, File } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import ThemeToggle from '@/components/ui/ThemeToggle'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface Summary {
   id: string
@@ -21,6 +23,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [summary, setSummary] = useState<Summary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [id, setId] = useState<string>('')
+  const { theme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
@@ -72,18 +75,82 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     }
   }
 
+  const exportToMarkdown = async () => {
+    if (!summary) return
+
+    try {
+      const response = await fetch(`/api/export/markdown/${summary.id}`)
+      
+      if (response.ok) {
+        // Получаем имя файла из заголовка Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        const fileName = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+          : `annotation_${summary.id}.md`
+
+        // Создаем blob и скачиваем файл
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } else {
+        console.error('Ошибка экспорта в Markdown')
+      }
+    } catch (error) {
+      console.error('Ошибка экспорта в Markdown:', error)
+    }
+  }
+
+  const exportToPDF = async () => {
+    if (!summary) return
+
+    try {
+      const response = await fetch(`/api/export/pdf-v2/${summary.id}`)
+      
+      if (response.ok) {
+        // Получаем имя файла из заголовка Content-Disposition
+        const contentDisposition = response.headers.get('Content-Disposition')
+        const fileName = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+          : `annotation_${summary.id}.pdf`
+
+        // Создаем blob и скачиваем файл
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } else {
+        console.error('Ошибка экспорта в PDF')
+      }
+    } catch (error) {
+      console.error('Ошибка экспорта в PDF:', error)
+    }
+  }
+
   if (isLoading) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
+        background: theme === 'dark' 
+          ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
+          : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
         <div style={{
           textAlign: 'center',
-          color: '#6b7280'
+          color: theme === 'dark' ? '#94a3b8' : '#6b7280'
         }}>
           Загрузка аннотации...
         </div>
@@ -95,14 +162,16 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
+        background: theme === 'dark' 
+          ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
+          : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
         <div style={{
           textAlign: 'center',
-          color: '#6b7280'
+          color: theme === 'dark' ? '#94a3b8' : '#6b7280'
         }}>
           Аннотация не найдена
         </div>
@@ -113,14 +182,20 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)'
+      background: theme === 'dark' 
+        ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)'
+        : 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)'
     }}>
       {/* Navigation */}
       <nav style={{
-        background: 'rgba(255, 255, 255, 0.8)',
+        background: theme === 'dark' 
+          ? 'rgba(30, 41, 59, 0.8)' 
+          : 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+        borderBottom: theme === 'dark' 
+          ? '1px solid rgba(71, 85, 105, 0.3)' 
+          : '1px solid rgba(255, 255, 255, 0.2)',
         padding: '1rem 0'
       }}>
         <div style={{
@@ -144,9 +219,9 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 gap: '0.5rem',
                 padding: '0.5rem 1rem',
                 borderRadius: '0.375rem',
-                border: '1px solid #d1d5db',
+                border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                 backgroundColor: 'transparent',
-                color: '#374151',
+                color: theme === 'dark' ? '#f1f5f9' : '#374151',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease-in-out'
               }}
@@ -155,8 +230,8 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 e.currentTarget.style.color = '#9333ea'
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.borderColor = '#d1d5db'
-                e.currentTarget.style.color = '#374151'
+                e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
+                e.currentTarget.style.color = theme === 'dark' ? '#f1f5f9' : '#374151'
               }}
             >
               <ArrowLeft style={{ width: '1rem', height: '1rem' }} />
@@ -182,7 +257,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               <span style={{
                 fontSize: '1.25rem',
                 fontWeight: 'bold',
-                color: '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827'
               }}>
                 Аннотация видео
               </span>
@@ -194,6 +269,67 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
             alignItems: 'center',
             gap: '0.5rem'
           }}>
+            <ThemeToggle />
+            <button
+              onClick={exportToMarkdown}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: '1px solid #3b82f6',
+                backgroundColor: theme === 'dark' ? '#1e3a8a' : '#eff6ff',
+                color: '#3b82f6',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.borderColor = '#2563eb'
+                e.currentTarget.style.backgroundColor = '#dbeafe'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.borderColor = '#3b82f6'
+                e.currentTarget.style.backgroundColor = '#eff6ff'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              <FileText style={{ width: '1rem', height: '1rem' }} />
+              Экспорт MD
+            </button>
+            
+            <button
+              onClick={exportToPDF}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: '1px solid #dc2626',
+                backgroundColor: theme === 'dark' ? '#7f1d1d' : '#fef2f2',
+                color: '#dc2626',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.borderColor = '#b91c1c'
+                e.currentTarget.style.backgroundColor = '#fee2e2'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.borderColor = '#dc2626'
+                e.currentTarget.style.backgroundColor = '#fef2f2'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              <File style={{ width: '1rem', height: '1rem' }} />
+              Экспорт PDF
+            </button>
+            
             <button
               onClick={deleteSummary}
               style={{
@@ -202,7 +338,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 gap: '0.5rem',
                 padding: '0.5rem 1rem',
                 borderRadius: '0.375rem',
-                border: '1px solid #d1d5db',
+                border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                 backgroundColor: 'transparent',
                 color: '#dc2626',
                 cursor: 'pointer',
@@ -231,12 +367,16 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
       }}>
         {/* Video Info */}
         <div style={{
-          background: 'white',
+          background: theme === 'dark' ? '#1e293b' : 'white',
           borderRadius: '1rem',
           padding: '2rem',
           marginBottom: '2rem',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          boxShadow: theme === 'dark' 
+            ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          border: theme === 'dark' 
+            ? '1px solid #475569' 
+            : '1px solid rgba(255, 255, 255, 0.2)'
         }}>
           <div style={{
             display: 'flex',
@@ -248,7 +388,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               <h1 style={{
                 fontSize: '1.25rem',
                 fontWeight: 'bold',
-                color: '#111827',
+                color: theme === 'dark' ? '#f1f5f9' : '#111827',
                 margin: '0 0 1rem 0',
                 lineHeight: '1.3'
               }}>
@@ -261,7 +401,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 gap: '2rem',
                 marginBottom: '1rem',
                 fontSize: '0.875rem',
-                color: '#6b7280'
+                color: theme === 'dark' ? '#94a3b8' : '#6b7280'
               }}>
                 <div style={{
                   display: 'flex',
@@ -326,16 +466,20 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
 
         {/* Summary Content */}
         <div style={{
-          background: 'white',
+          background: theme === 'dark' ? '#1e293b' : 'white',
           borderRadius: '1rem',
           padding: '2rem',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          boxShadow: theme === 'dark' 
+            ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          border: theme === 'dark' 
+            ? '1px solid #475569' 
+            : '1px solid rgba(255, 255, 255, 0.2)'
         }}>
           <h2 style={{
             fontSize: '1rem', // Reduced from 1.25rem to 1rem (2 sizes smaller)
             fontWeight: 'bold',
-            color: '#111827',
+            color: theme === 'dark' ? '#f1f5f9' : '#111827',
             margin: '0 0 1.5rem 0',
             display: 'flex',
             alignItems: 'center',
@@ -345,7 +489,9 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
             ИИ-аннотация
           </h2>
 
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg max-w-none" style={{
+            color: theme === 'dark' ? '#cbd5e1' : 'inherit'
+          }}>
             <ReactMarkdown>
               {summary.summary_text}
             </ReactMarkdown>
