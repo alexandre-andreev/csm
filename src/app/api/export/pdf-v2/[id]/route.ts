@@ -149,7 +149,7 @@ export async function GET(
     const fileName = generatePDFFileName(summary.video_title, date)
 
     // Возвращаем PDF файл
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(Buffer.from(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
