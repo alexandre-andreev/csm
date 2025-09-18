@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText } from 'lucide-react'
+import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText, Menu, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import ProgressBar from '@/components/ui/ProgressBar'
 import ThemeToggle from '@/components/ui/ThemeToggle'
@@ -63,12 +63,23 @@ export default function DashboardPage() {
   const [progressText, setProgressText] = useState('')
   const [progress, setProgress] = useState(0)
   const [showProgressBar, setShowProgressBar] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
+    
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    
+    return () => window.removeEventListener('resize', checkIsMobile)
   }, [])
 
   useEffect(() => {
@@ -263,6 +274,7 @@ export default function DashboardPage() {
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
+            {/* Logo */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -282,14 +294,16 @@ export default function DashboardPage() {
               <span style={{
                 fontSize: '1.25rem',
                 fontWeight: 'bold',
-                color: theme === 'dark' ? '#f1f5f9' : '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827',
+                display: isMobile ? 'none' : 'block'
               }}>
                 Аннотация видео
               </span>
             </div>
 
+            {/* Desktop Menu */}
             <div style={{
-              display: 'flex',
+              display: isMobile ? 'none' : 'flex',
               alignItems: 'center',
               gap: '0.5rem'
             }}>
@@ -322,7 +336,75 @@ export default function DashboardPage() {
                 Выйти
               </button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div style={{
+              display: isMobile ? 'flex' : 'none',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <ThemeToggle />
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: 'transparent',
+                  color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                {isMobileMenuOpen ? (
+                  <X style={{ width: '1.25rem', height: '1.25rem' }} />
+                ) : (
+                  <Menu style={{ width: '1.25rem', height: '1.25rem' }} />
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Menu Dropdown */}
+          {isMobileMenuOpen && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: theme === 'dark' 
+                ? 'rgba(30, 41, 59, 0.95)' 
+                : 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderBottom: theme === 'dark' 
+                ? '1px solid rgba(71, 85, 105, 0.3)' 
+                : '1px solid rgba(255, 255, 255, 0.2)',
+              padding: '1rem',
+              zIndex: 50
+            }}>
+              <button
+                onClick={handleLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: 'transparent',
+                  color: theme === 'dark' ? '#fbbf24' : '#374151',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  width: '100%',
+                  justifyContent: 'center'
+                }}
+              >
+                <LogOut style={{ width: '1rem', height: '1rem' }} />
+                Выйти
+              </button>
+            </div>
+          )}
         </nav>
 
         <div style={{
@@ -333,8 +415,10 @@ export default function DashboardPage() {
           {/* Stats */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '1.5rem',
+            gridTemplateColumns: isMobile 
+              ? '1fr' 
+              : 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: isMobile ? '1rem' : '1.5rem',
             marginBottom: '2rem'
           }}>
             <div style={{
@@ -445,7 +529,11 @@ export default function DashboardPage() {
               gap: '1rem',
               marginTop: '1.5rem'
             }}>
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: '1rem' 
+              }}>
                 <input
                   type="url"
                   value={newUrl}
@@ -535,7 +623,8 @@ export default function DashboardPage() {
               
               <div style={{
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'stretch' : 'center',
                 gap: '1rem'
               }}>
                 <div style={{
@@ -556,7 +645,7 @@ export default function DashboardPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Поиск аннотаций..."
                     style={{
-                      width: '250px',
+                      width: isMobile ? '100%' : '250px',
                       height: '2.5rem',
                       padding: '0 1rem 0 2.5rem',
                       borderRadius: '0.5rem',
@@ -623,7 +712,8 @@ export default function DashboardPage() {
                   >
                     <div style={{ 
                       display: 'flex',
-                      flexDirection: 'column'
+                      flexDirection: isMobile ? 'column' : 'row',
+                      gap: isMobile ? '1rem' : '0'
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
@@ -677,14 +767,15 @@ export default function DashboardPage() {
                         
                         <div style={{
                           display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem'
+                          flexDirection: isMobile ? 'column' : 'row',
+                          alignItems: isMobile ? 'stretch' : 'center',
+                          gap: isMobile ? '0.75rem' : '0.5rem'
                         }}>
                           <button
                             onClick={() => exportToMarkdown(summary.id)}
                             title="Экспортировать в Markdown"
                             style={{
-                              padding: '0.5rem',
+                              padding: isMobile ? '0.75rem 1rem' : '0.5rem',
                               borderRadius: '0.375rem',
                               border: '1px solid #3b82f6',
                               backgroundColor: theme === 'dark' ? '#1e3a8a' : '#eff6ff',
@@ -694,9 +785,11 @@ export default function DashboardPage() {
                               flexShrink: 0,
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'center',
                               gap: '0.25rem',
-                              fontSize: '0.75rem',
-                              fontWeight: '500'
+                              fontSize: isMobile ? '0.875rem' : '0.75rem',
+                              fontWeight: '500',
+                              minHeight: isMobile ? '44px' : 'auto'
                             }}
                             onMouseOver={(e) => {
                               e.currentTarget.style.borderColor = '#2563eb'
@@ -718,14 +811,21 @@ export default function DashboardPage() {
                             onClick={() => router.push(`/summary/${summary.id}`)}
                             title="Просмотреть полную аннотацию"
                             style={{
-                              padding: '0.5rem',
+                              padding: isMobile ? '0.75rem 1rem' : '0.5rem',
                               borderRadius: '0.375rem',
                               border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                               backgroundColor: theme === 'dark' ? '#1e293b' : 'white',
                               color: theme === 'dark' ? '#f1f5f9' : '#374151',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease-in-out',
-                              flexShrink: 0
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.25rem',
+                              fontSize: isMobile ? '0.875rem' : '0.75rem',
+                              fontWeight: '500',
+                              minHeight: isMobile ? '44px' : 'auto'
                             }}
                             onMouseOver={(e) => {
                               e.currentTarget.style.borderColor = '#9333ea'
@@ -743,14 +843,21 @@ export default function DashboardPage() {
                             onClick={() => deleteSummary(summary.id)}
                             title="Удалить аннотацию"
                             style={{
-                              padding: '0.5rem',
+                              padding: isMobile ? '0.75rem 1rem' : '0.5rem',
                               borderRadius: '0.375rem',
                               border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                               backgroundColor: 'transparent',
                               color: '#dc2626',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease-in-out',
-                              flexShrink: 0
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.25rem',
+                              fontSize: isMobile ? '0.875rem' : '0.75rem',
+                              fontWeight: '500',
+                              minHeight: isMobile ? '44px' : 'auto'
                             }}
                             onMouseOver={(e) => {
                               e.currentTarget.style.borderColor = '#dc2626'
