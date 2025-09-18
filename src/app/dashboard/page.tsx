@@ -646,6 +646,7 @@ export default function DashboardPage() {
                     placeholder="Поиск аннотаций..."
                     style={{
                       width: isMobile ? '100%' : '250px',
+                      maxWidth: '100%',
                       height: '2.5rem',
                       padding: '0 1rem 0 2.5rem',
                       borderRadius: '0.5rem',
@@ -653,7 +654,8 @@ export default function DashboardPage() {
                       backgroundColor: theme === 'dark' ? '#334155' : 'white',
                       color: theme === 'dark' ? '#f1f5f9' : '#111827',
                       transition: 'border-color 0.2s',
-                      outline: 'none'
+                      outline: 'none',
+                      boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
                     onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}

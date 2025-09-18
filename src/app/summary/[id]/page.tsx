@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText } from 'lucide-react'
+import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText, Menu, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -24,11 +24,22 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [isLoading, setIsLoading] = useState(true)
   const [id, setId] = useState<string>('')
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
+    
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    
+    return () => window.removeEventListener('resize', checkIsMobile)
   }, [])
 
   useEffect(() => {
@@ -249,9 +260,10 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 <Sparkles style={{ width: '1.25rem', height: '1.25rem', color: 'white' }} />
               </div>
               <span style={{
-                fontSize: '1.25rem',
+                fontSize: isMobile ? '1rem' : '1.25rem',
                 fontWeight: 'bold',
-                color: theme === 'dark' ? '#f1f5f9' : '#111827'
+                color: theme === 'dark' ? '#f1f5f9' : '#111827',
+                display: isMobile ? 'none' : 'block'
               }}>
                 Аннотация видео
               </span>
@@ -259,7 +271,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
           </div>
 
           <div style={{
-            display: 'flex',
+            display: isMobile ? 'none' : 'flex',
             alignItems: 'center',
             gap: '0.5rem'
           }}>
@@ -322,8 +334,105 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               Удалить
             </button>
           </div>
-        </div>
-      </nav>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div style={{
+            display: isMobile ? 'flex' : 'none',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <ThemeToggle />
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '0.375rem',
+                border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                backgroundColor: 'transparent',
+                color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              {isMobileMenuOpen ? (
+                <X style={{ width: '1.25rem', height: '1.25rem' }} />
+              ) : (
+                <Menu style={{ width: '1.25rem', height: '1.25rem' }} />
+              )}
+            </button>
+          </div>
+        </nav>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: theme === 'dark' 
+              ? 'rgba(30, 41, 59, 0.95)' 
+              : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: theme === 'dark' 
+              ? '1px solid rgba(71, 85, 105, 0.3)' 
+              : '1px solid rgba(255, 255, 255, 0.2)',
+            padding: '1rem',
+            zIndex: 50
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              <button
+                onClick={exportToMarkdown}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #3b82f6',
+                  backgroundColor: theme === 'dark' ? '#1e3a8a' : '#eff6ff',
+                  color: '#3b82f6',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  fontSize: '0.9rem',
+                  fontWeight: '500'
+                }}
+              >
+                <FileText style={{ width: '1rem', height: '1rem' }} />
+                Экспорт MD
+              </button>
+              
+              <button
+                onClick={deleteSummary}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                  backgroundColor: 'transparent',
+                  color: '#dc2626',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  fontSize: '0.9rem',
+                  fontWeight: '500'
+                }}
+              >
+                <Trash2 style={{ width: '1rem', height: '1rem' }} />
+                Удалить аннотацию
+              </button>
+            </div>
+          </div>
+        )}
 
       <div style={{
         maxWidth: '1200px',

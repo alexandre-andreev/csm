@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogIn, Mail, Lock, ArrowLeft, Sparkles } from 'lucide-react'
+import { LogIn, Mail, Lock, ArrowLeft, Sparkles, Menu, X } from 'lucide-react'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useTheme } from '@/contexts/ThemeContext'
 
@@ -12,11 +12,22 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
+    
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    
+    return () => window.removeEventListener('resize', checkIsMobile)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,7 +164,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '1.5rem'
+          gap: isMobile ? '1.25rem' : '1.5rem'
         }}>
           {error && (
             <div style={{
@@ -202,7 +213,7 @@ export default function LoginPage() {
                 required
                 style={{
                   width: 'calc(100% - 2.5rem)',
-                  height: '3rem',
+                  height: isMobile ? '3.5rem' : '3rem',
                   padding: '0 1rem 0 2.5rem',
                   borderRadius: '0.375rem',
                   border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
@@ -210,7 +221,8 @@ export default function LoginPage() {
                   color: theme === 'dark' ? '#f1f5f9' : '#111827',
                   transition: 'border-color 0.2s',
                   outline: 'none',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  fontSize: isMobile ? '1rem' : '0.875rem'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
                 onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
@@ -252,7 +264,7 @@ export default function LoginPage() {
                 required
                 style={{
                   width: 'calc(100% - 2.5rem)',
-                  height: '3rem',
+                  height: isMobile ? '3.5rem' : '3rem',
                   padding: '0 1rem 0 2.5rem',
                   borderRadius: '0.375rem',
                   border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
@@ -260,7 +272,8 @@ export default function LoginPage() {
                   color: theme === 'dark' ? '#f1f5f9' : '#111827',
                   transition: 'border-color 0.2s',
                   outline: 'none',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  fontSize: isMobile ? '1rem' : '0.875rem'
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
                 onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
@@ -272,14 +285,14 @@ export default function LoginPage() {
             type="submit"
             disabled={isLoading}
             style={{
-              width: 'calc(100% - 2.5rem)',
-              height: '3rem',
+              width: '100%',
+              height: isMobile ? '3.5rem' : '3rem',
               borderRadius: '0.375rem',
               background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #9333ea, #3b82f6)',
               color: 'white',
               border: 'none',
               cursor: isLoading ? 'not-allowed' : 'pointer',
-              fontSize: '1rem',
+              fontSize: isMobile ? '1.1rem' : '1rem',
               fontWeight: '600',
               display: 'flex',
               alignItems: 'center',
