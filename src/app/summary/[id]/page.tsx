@@ -115,7 +115,14 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     if (!summary) return
 
     try {
-      const response = await fetch(`/api/export/pdf-v2/${summary.id}`)
+      // Сначала пробуем основной PDF экспорт
+      let response = await fetch(`/api/export/pdf-v2/${summary.id}`)
+      
+      // Если основной не работает, используем fallback
+      if (!response.ok && response.status === 503) {
+        console.log('Используем fallback PDF экспорт')
+        response = await fetch(`/api/export/pdf-fallback/${summary.id}`)
+      }
       
       if (response.ok) {
         // Получаем имя файла из заголовка Content-Disposition
@@ -135,10 +142,13 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
         document.body.removeChild(link)
         window.URL.revokeObjectURL(url)
       } else {
-        console.error('Ошибка экспорта в PDF')
+        const errorData = await response.json()
+        console.error('Ошибка экспорта в PDF:', errorData.error)
+        alert(`Ошибка экспорта в PDF: ${errorData.error}`)
       }
     } catch (error) {
       console.error('Ошибка экспорта в PDF:', error)
+      alert('Ошибка экспорта в PDF. Попробуйте позже.')
     }
   }
 

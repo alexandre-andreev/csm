@@ -123,10 +123,32 @@ export async function GET(
     `
 
     // Динамически импортируем Puppeteer
-    const puppeteer = await import('puppeteer')
+    const puppeteer = await import('puppeteer-core')
+    
+    // Конфигурация для Vercel и разных браузеров
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--font-render-hinting=none',
+        '--disable-extensions',
+        '--disable-plugins',
+        '--disable-images',
+        '--disable-javascript',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
     })
 
     const page = await browser.newPage()
@@ -135,12 +157,15 @@ export async function GET(
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
+      preferCSSPageSize: true,
       margin: {
         top: '20mm',
         right: '20mm',
         bottom: '20mm',
         left: '20mm'
-      }
+      },
+      displayHeaderFooter: false,
+      scale: 0.8
     })
 
     await browser.close()
@@ -160,6 +185,23 @@ export async function GET(
 
   } catch (error) {
     console.error('Ошибка экспорта в PDF:', error)
+    
+    // Более детальная обработка ошибок
+    if (error instanceof Error) {
+      if (error.message.includes('Could not find Chrome')) {
+        return NextResponse.json(
+          { error: 'PDF экспорт временно недоступен. Попробуйте позже.' },
+          { status: 503 }
+        )
+      }
+      if (error.message.includes('timeout')) {
+        return NextResponse.json(
+          { error: 'Превышено время ожидания. Попробуйте позже.' },
+          { status: 408 }
+        )
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 }
