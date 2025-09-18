@@ -181,6 +181,27 @@ export default function DashboardPage() {
     }
   }
 
+  const deleteSummary = async (summaryId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить эту аннотацию?')) return
+
+    try {
+      const response = await fetch(`/api/summaries/${summaryId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Обновляем список аннотаций
+        setSummaries(prev => prev.filter(s => s.id !== summaryId))
+      } else {
+        const errorData = await response.json()
+        console.error('Ошибка удаления аннотации:', errorData.error)
+        alert(`Ошибка удаления аннотации: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Ошибка удаления аннотации:', error)
+      alert('Ошибка удаления аннотации. Попробуйте позже.')
+    }
+  }
 
   const filteredSummaries = summaries.filter(summary =>
     summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -716,6 +737,31 @@ export default function DashboardPage() {
                             }}
                           >
                             <Eye style={{ width: '1rem', height: '1rem' }} />
+                          </button>
+                          
+                          <button
+                            onClick={() => deleteSummary(summary.id)}
+                            title="Удалить аннотацию"
+                            style={{
+                              padding: '0.5rem',
+                              borderRadius: '0.375rem',
+                              border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                              backgroundColor: 'transparent',
+                              color: '#dc2626',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease-in-out',
+                              flexShrink: 0
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#dc2626'
+                              e.currentTarget.style.backgroundColor = '#fef2f2'
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }}
+                          >
+                            <Trash2 style={{ width: '1rem', height: '1rem' }} />
                           </button>
                         </div>
                       </div>
