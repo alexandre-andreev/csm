@@ -38,6 +38,8 @@ export async function GET(
     
     // Создаем имя файла с улучшенной генерацией
     const fileName = generateMarkdownFileName(summary.video_title, date)
+    console.log('Generated filename:', fileName)
+    console.log('Video title:', summary.video_title)
 
     // Формируем Markdown контент
     const markdownContent = `# ${summary.video_title}
@@ -72,13 +74,15 @@ ${summary.summary_text}
 
 *Эта аннотация была создана автоматически с помощью ИИ на основе транскрипта YouTube видео.*`
 
-    // Возвращаем файл с правильной кодировкой для Safari
+    // Возвращаем файл с совместимой кодировкой для всех браузеров
+    const contentDisposition = `attachment; filename="${fileName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`
+    console.log('Content-Disposition header:', contentDisposition)
+    
     return new NextResponse(markdownContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`,
-        'Content-Transfer-Encoding': 'binary',
+        'Content-Disposition': contentDisposition,
         'Cache-Control': 'no-cache',
         'Access-Control-Expose-Headers': 'Content-Disposition'
       }

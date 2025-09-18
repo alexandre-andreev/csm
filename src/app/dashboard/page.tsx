@@ -172,21 +172,47 @@ export default function DashboardPage() {
         const contentDisposition = response.headers.get('Content-Disposition')
         let fileName = `annotation_${summaryId}.md`
         
+        console.log('Content-Disposition header:', contentDisposition)
+        
         if (contentDisposition) {
-          // Пробуем разные варианты извлечения имени файла
-          const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/) || 
-                               contentDisposition.match(/filename="(.+)"/) ||
-                               contentDisposition.match(/filename=([^;]+)/)
+          // Пробуем извлечь имя файла из разных форматов
+          let extractedFileName = null
           
-          if (filenameMatch) {
+          // Сначала пробуем UTF-8 формат
+          const utf8Match = contentDisposition.match(/filename\*=UTF-8''(.+)/)
+          if (utf8Match) {
             try {
-              fileName = decodeURIComponent(filenameMatch[1])
+              extractedFileName = decodeURIComponent(utf8Match[1])
             } catch (e) {
-              // Если не удалось декодировать, используем как есть
-              fileName = filenameMatch[1].replace(/"/g, '')
+              console.log('Не удалось декодировать UTF-8 имя файла')
             }
           }
+          
+          // Если UTF-8 не сработал, пробуем обычный формат
+          if (!extractedFileName) {
+            const normalMatch = contentDisposition.match(/filename="([^"]+)"/)
+            if (normalMatch) {
+              extractedFileName = normalMatch[1]
+            }
+          }
+          
+          // Если и это не сработало, пробуем без кавычек
+          if (!extractedFileName) {
+            const noQuotesMatch = contentDisposition.match(/filename=([^;]+)/)
+            if (noQuotesMatch) {
+              extractedFileName = noQuotesMatch[1].trim()
+            }
+          }
+          
+          if (extractedFileName) {
+            fileName = extractedFileName
+            console.log('Extracted filename:', fileName)
+          } else {
+            console.log('Could not extract filename from header')
+          }
         }
+        
+        console.log('Final filename:', fileName)
 
         // Создаем blob и скачиваем файл
         const blob = await response.blob()
