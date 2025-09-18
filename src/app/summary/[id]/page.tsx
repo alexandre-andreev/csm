@@ -23,8 +23,13 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [summary, setSummary] = useState<Summary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [id, setId] = useState<string>('')
+  const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const getParams = async () => {
@@ -135,6 +140,25 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     } catch (error) {
       console.error('Ошибка экспорта в PDF:', error)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #e0f2fe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          color: '#6b7280'
+        }}>
+          Загрузка...
+        </div>
+      </div>
+    )
   }
 
   if (isLoading) {
