@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText, File } from 'lucide-react'
+import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -111,46 +111,6 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  const exportToPDF = async () => {
-    if (!summary) return
-
-    try {
-      // Сначала пробуем основной PDF экспорт
-      let response = await fetch(`/api/export/pdf-v2/${summary.id}`)
-      
-      // Если основной не работает, используем fallback
-      if (!response.ok && response.status === 503) {
-        console.log('Используем fallback PDF экспорт')
-        response = await fetch(`/api/export/pdf-fallback/${summary.id}`)
-      }
-      
-      if (response.ok) {
-        // Получаем имя файла из заголовка Content-Disposition
-        const contentDisposition = response.headers.get('Content-Disposition')
-        const fileName = contentDisposition
-          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
-          : `annotation_${summary.id}.pdf`
-
-        // Создаем blob и скачиваем файл
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-      } else {
-        const errorData = await response.json()
-        console.error('Ошибка экспорта в PDF:', errorData.error)
-        alert(`Ошибка экспорта в PDF: ${errorData.error}`)
-      }
-    } catch (error) {
-      console.error('Ошибка экспорта в PDF:', error)
-      alert('Ошибка экспорта в PDF. Попробуйте позже.')
-    }
-  }
 
   if (!mounted) {
     return (
@@ -334,35 +294,6 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               Экспорт MD
             </button>
             
-            <button
-              onClick={exportToPDF}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: '1px solid #dc2626',
-                backgroundColor: theme === 'dark' ? '#7f1d1d' : '#fef2f2',
-                color: '#dc2626',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                fontWeight: '500'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.borderColor = '#b91c1c'
-                e.currentTarget.style.backgroundColor = '#fee2e2'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.borderColor = '#dc2626'
-                e.currentTarget.style.backgroundColor = '#fef2f2'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <File style={{ width: '1rem', height: '1rem' }} />
-              Экспорт PDF
-            </button>
             
             <button
               onClick={deleteSummary}

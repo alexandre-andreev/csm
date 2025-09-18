@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText, File } from 'lucide-react'
+import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import ProgressBar from '@/components/ui/ProgressBar'
 import ThemeToggle from '@/components/ui/ThemeToggle'
@@ -181,44 +181,6 @@ export default function DashboardPage() {
     }
   }
 
-  const exportToPDF = async (summaryId: string) => {
-    try {
-      // Сначала пробуем основной PDF экспорт
-      let response = await fetch(`/api/export/pdf-v2/${summaryId}`)
-      
-      // Если основной не работает, используем fallback
-      if (!response.ok && response.status === 503) {
-        console.log('Используем fallback PDF экспорт')
-        response = await fetch(`/api/export/pdf-fallback/${summaryId}`)
-      }
-      
-      if (response.ok) {
-        // Получаем имя файла из заголовка Content-Disposition
-        const contentDisposition = response.headers.get('Content-Disposition')
-        const fileName = contentDisposition
-          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
-          : `annotation_${summaryId}.pdf`
-
-        // Создаем blob и скачиваем файл
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-      } else {
-        const errorData = await response.json()
-        console.error('Ошибка экспорта в PDF:', errorData.error)
-        alert(`Ошибка экспорта в PDF: ${errorData.error}`)
-      }
-    } catch (error) {
-      console.error('Ошибка экспорта в PDF:', error)
-      alert('Ошибка экспорта в PDF. Попробуйте позже.')
-    }
-  }
 
   const filteredSummaries = summaries.filter(summary =>
     summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -730,38 +692,6 @@ export default function DashboardPage() {
                             MD
                           </button>
                           
-                          <button
-                            onClick={() => exportToPDF(summary.id)}
-                            title="Экспортировать в PDF"
-                            style={{
-                              padding: '0.5rem',
-                              borderRadius: '0.375rem',
-                              border: '1px solid #dc2626',
-                              backgroundColor: theme === 'dark' ? '#7f1d1d' : '#fef2f2',
-                              color: '#dc2626',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease-in-out',
-                              flexShrink: 0,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.25rem',
-                              fontSize: '0.75rem',
-                              fontWeight: '500'
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.borderColor = '#b91c1c'
-                              e.currentTarget.style.backgroundColor = '#fee2e2'
-                              e.currentTarget.style.transform = 'translateY(-1px)'
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.borderColor = '#dc2626'
-                              e.currentTarget.style.backgroundColor = '#fef2f2'
-                              e.currentTarget.style.transform = 'translateY(0)'
-                            }}
-                          >
-                            <File style={{ width: '0.875rem', height: '0.875rem' }} />
-                            PDF
-                          </button>
                           
                           <button
                             onClick={() => router.push(`/summary/${summary.id}`)}
