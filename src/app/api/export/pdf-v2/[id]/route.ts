@@ -125,31 +125,56 @@ export async function GET(
     // Динамически импортируем Puppeteer
     const puppeteer = await import('puppeteer-core')
     
-    // Конфигурация для Vercel и разных браузеров
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--font-render-hinting=none',
-        '--disable-extensions',
-        '--disable-plugins',
-        '--disable-images',
-        '--disable-javascript',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
-    })
+    // Пробуем разные пути к Chromium
+    const possiblePaths = [
+      process.env.PUPPETEER_EXECUTABLE_PATH,
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser',
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable',
+      '/opt/google/chrome/chrome'
+    ].filter(Boolean)
+    
+    let browser
+    let lastError
+    
+    for (const executablePath of possiblePaths) {
+      try {
+        browser = await puppeteer.launch({
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--font-render-hinting=none',
+            '--disable-extensions',
+            '--disable-plugins',
+            '--disable-images',
+            '--disable-javascript',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding'
+          ],
+          executablePath
+        })
+        break // Если успешно запустили, выходим из цикла
+      } catch (error) {
+        lastError = error
+        console.log(`Не удалось запустить браузер по пути: ${executablePath}`)
+        continue
+      }
+    }
+    
+    if (!browser) {
+      throw new Error(`Не удалось найти рабочий браузер. Последняя ошибка: ${lastError?.message}`)
+    }
 
     const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'networkidle0' })
