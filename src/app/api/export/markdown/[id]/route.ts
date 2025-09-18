@@ -72,13 +72,15 @@ ${summary.summary_text}
 
 *Эта аннотация была создана автоматически с помощью ИИ на основе транскрипта YouTube видео.*`
 
-    // Возвращаем файл
+    // Возвращаем файл с правильной кодировкой для Safari
     return new NextResponse(markdownContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Cache-Control': 'no-cache'
+        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+        'Content-Transfer-Encoding': 'binary',
+        'Cache-Control': 'no-cache',
+        'Access-Control-Expose-Headers': 'Content-Disposition'
       }
     })
 

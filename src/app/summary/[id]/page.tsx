@@ -100,9 +100,23 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
       if (response.ok) {
         // Получаем имя файла из заголовка Content-Disposition
         const contentDisposition = response.headers.get('Content-Disposition')
-        const fileName = contentDisposition
-          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
-          : `annotation_${summary.id}.md`
+        let fileName = `annotation_${summary.id}.md`
+        
+        if (contentDisposition) {
+          // Пробуем разные варианты извлечения имени файла
+          const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/) || 
+                               contentDisposition.match(/filename="(.+)"/) ||
+                               contentDisposition.match(/filename=([^;]+)/)
+          
+          if (filenameMatch) {
+            try {
+              fileName = decodeURIComponent(filenameMatch[1])
+            } catch (e) {
+              // Если не удалось декодировать, используем как есть
+              fileName = filenameMatch[1].replace(/"/g, '')
+            }
+          }
+        }
 
         // Создаем blob и скачиваем файл
         const blob = await response.blob()
@@ -110,6 +124,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
         const link = document.createElement('a')
         link.href = url
         link.download = fileName
+        link.style.display = 'none'
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
