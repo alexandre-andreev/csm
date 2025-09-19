@@ -142,7 +142,7 @@ export async function PATCH(
 
     if (error) {
       console.error('Ошибка обновления тегов:', error)
-      return NextResponse.json({ error: 'Ошибка обновления тегов' }, { status: 500 })
+      return NextResponse.json({ error: error.message || 'Ошибка обновления тегов', details: error }, { status: 400 })
     }
 
     return NextResponse.json(data)

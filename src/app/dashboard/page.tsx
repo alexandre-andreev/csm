@@ -75,6 +75,7 @@ export default function DashboardPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [allowLoadMore, setAllowLoadMore] = useState(false)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
   
   const formatISODuration = (value?: string): string => {
     if (!value) return ''
@@ -324,10 +325,19 @@ export default function DashboardPage() {
     }
   }
 
-  const filteredSummaries = summaries.filter(summary =>
-    summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const allTags: string[] = Array.from(new Set(
+    summaries.flatMap(s => Array.isArray(s.tags) ? s.tags : [])
+      .map(t => t || '')
+      .filter(Boolean)
+  ))
+
+  const filteredSummaries = summaries.filter(summary => {
+    const matchesText = summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
+    const tags = Array.isArray(summary.tags) ? summary.tags : []
+    const matchesTags = selectedTags.length === 0 || selectedTags.every(t => tags.map(x => x.toLowerCase()).includes(t.toLowerCase()))
+    return matchesText && matchesTags
+  })
   const visibleSummaries = filteredSummaries.slice(0, page * PAGE_SIZE)
   const hasMore = visibleSummaries.length < filteredSummaries.length
 
@@ -806,6 +816,46 @@ export default function DashboardPage() {
                     onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
                   />
                 </div>
+                {/* Tags filter chips */}
+                {allTags.length > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: isMobile ? 'nowrap' : 'wrap',
+                    overflowX: isMobile ? 'auto' : 'visible',
+                    gap: '0.5rem',
+                    paddingBottom: isMobile ? '0.25rem' : 0,
+                    maxWidth: '100%'
+                  }}>
+                    {allTags.map(tag => {
+                      const active = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase())
+                      return (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            setPage(1)
+                            setAllowLoadMore(false)
+                            setSelectedTags(prev => {
+                              const has = prev.some(t => t.toLowerCase() === tag.toLowerCase())
+                              return has ? prev.filter(t => t.toLowerCase() !== tag.toLowerCase()) : [...prev, tag]
+                            })
+                          }}
+                          style={{
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: '9999px',
+                            border: active ? '1px solid #9333ea' : (theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db'),
+                            background: active ? 'linear-gradient(135deg, #9333ea, #3b82f6)' : (theme === 'dark' ? '#0f172a' : '#f3f4f6'),
+                            color: active ? '#fff' : (theme === 'dark' ? '#e5e7eb' : '#374151'),
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                          }}
+                          title={active ? 'Снять фильтр' : 'Фильтровать по тегу'}
+                        >
+                          {tag}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
