@@ -17,6 +17,7 @@ interface Summary {
   channel_title?: string
   duration?: string
   thumbnail_url?: string
+  tags?: string[]
 }
 
 export default function SummaryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -59,23 +60,13 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     }
   }, [id])
 
-  useEffect(() => {
-    if (!id) return
-    try {
-      const raw = localStorage.getItem(`summary_tags_${id}`)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) setTags(parsed.filter(t => typeof t === 'string'))
-      }
-    } catch {}
-  }, [id])
-
   const fetchSummary = async () => {
     try {
       const response = await fetch(`/api/summaries/${id}`)
       if (response.ok) {
         const data = await response.json()
         setSummary(data)
+        setTags(Array.isArray(data?.tags) ? data.tags : [])
       } else {
         router.push('/dashboard')
       }
@@ -181,9 +172,19 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  const saveTags = (next: string[]) => {
+  const saveTags = async (next: string[]) => {
     setTags(next)
-    try { localStorage.setItem(`summary_tags_${id}`, JSON.stringify(next)) } catch {}
+    try {
+      const resp = await fetch(`/api/summaries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tags: next })
+      })
+      if (resp.ok) {
+        const updated = await resp.json()
+        setTags(Array.isArray(updated?.tags) ? updated.tags : next)
+      }
+    } catch {}
   }
 
   const handleAddTag = () => {
@@ -192,7 +193,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     const normalized = value.slice(0, 24)
     const exists = tags.some(t => t.toLowerCase() === normalized.toLowerCase())
     if (exists) { setNewTag(''); return }
-    if (tags.length >= 8) { alert('Максимум 8 тегов'); return }
+    if (tags.length >= 3) { alert('Максимум 3 тега'); return }
     saveTags([...tags, normalized])
     setNewTag('')
   }
@@ -731,7 +732,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                   </div>
                 </div>
                 <div style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#64748b' : '#9ca3af', marginTop: '0.25rem' }}>
-                  До 8 тегов, максимум 24 символа каждый
+                  До 3 тегов, максимум 24 символа каждый
                 </div>
               </div>
             </div>
