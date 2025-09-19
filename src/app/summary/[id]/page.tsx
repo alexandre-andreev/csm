@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText, Menu, X } from 'lucide-react'
+import { ArrowLeft, Trash2, ExternalLink, Clock, Calendar, Sparkles, Download, FileText, Menu, X, Copy } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -154,6 +154,17 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
       }
     } catch (error) {
       console.error('Ошибка экспорта в Markdown:', error)
+    }
+  }
+
+  const copySummaryToClipboard = async () => {
+    if (!summary) return
+    try {
+      await navigator.clipboard.writeText(summary.summary_text)
+      alert('Аннотация скопирована в буфер обмена')
+    } catch (e) {
+      console.error('Clipboard error:', e)
+      alert('Не удалось скопировать аннотацию')
     }
   }
 
@@ -413,6 +424,24 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
             >
               <Trash2 style={{ width: '1rem', height: '1rem' }} />
               Удалить
+            </button>
+            <button
+              onClick={copySummaryToClipboard}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                backgroundColor: 'transparent',
+                color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out'
+              }}
+            >
+              <Copy style={{ width: '1rem', height: '1rem' }} />
+              Копировать
             </button>
           </div>
           </div>

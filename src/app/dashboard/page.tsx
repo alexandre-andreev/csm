@@ -74,6 +74,35 @@ export default function DashboardPage() {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [allowLoadMore, setAllowLoadMore] = useState(false)
+  
+  const formatISODuration = (value?: string): string => {
+    if (!value) return ''
+    // Try ISO 8601 PT#H#M#S
+    const m = value.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+    if (m) {
+      const h = parseInt(m[1] || '0', 10)
+      const mm = parseInt(m[2] || '0', 10)
+      const ss = parseInt(m[3] || '0', 10)
+      const parts: string[] = []
+      if (h > 0) parts.push(String(h))
+      parts.push(String(mm).padStart(2, '0'))
+      parts.push(String(ss).padStart(2, '0'))
+      return parts.join(':')
+    }
+    // If numeric seconds
+    const secs = Number(value)
+    if (!Number.isNaN(secs) && secs > 0) {
+      const h = Math.floor(secs / 3600)
+      const mm = Math.floor((secs % 3600) / 60)
+      const ss = Math.floor(secs % 60)
+      const parts: string[] = []
+      if (h > 0) parts.push(String(h))
+      parts.push(String(mm).padStart(2, '0'))
+      parts.push(String(ss).padStart(2, '0'))
+      return parts.join(':')
+    }
+    return value
+  }
 
   const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -826,6 +855,54 @@ export default function DashboardPage() {
                       gap: isMobile ? '1rem' : '0'
                     }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
+                        {(summary.thumbnail_url || summary.duration) && (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            marginBottom: '0.5rem'
+                          }}>
+                            {summary.thumbnail_url && (
+                              <div style={{
+                                position: 'relative',
+                                width: isMobile ? '120px' : '160px',
+                                aspectRatio: '16 / 9',
+                                borderRadius: '0.5rem',
+                                overflow: 'hidden',
+                                background: theme === 'dark' ? '#1f2937' : '#e5e7eb',
+                                flexShrink: 0
+                              }}>
+                                <img
+                                  src={summary.thumbnail_url}
+                                  alt="thumbnail"
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                />
+                                {summary.duration && (
+                                  <span style={{
+                                    position: 'absolute',
+                                    right: 6,
+                                    bottom: 6,
+                                    background: 'rgba(0,0,0,0.75)',
+                                    color: 'white',
+                                    fontSize: '0.75rem',
+                                    padding: '0.1rem 0.35rem',
+                                    borderRadius: '0.25rem'
+                                  }}>
+                                    {formatISODuration(summary.duration)}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {!summary.thumbnail_url && summary.duration && (
+                              <span style={{
+                                fontSize: '0.8rem',
+                                color: theme === 'dark' ? '#cbd5e1' : '#6b7280'
+                              }}>
+                                Длительность: {formatISODuration(summary.duration)}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <h3 style={{
                           fontSize: '1.125rem', // Increased from 1rem to 1.125rem (1 size larger)
                           fontWeight: '600',
