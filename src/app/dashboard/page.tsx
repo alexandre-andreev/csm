@@ -583,14 +583,15 @@ export default function DashboardPage() {
                   required
                   style={{
                     flex: 1,
-                    height: '3rem',
-                    padding: '0 1rem',
+                    height: isMobile ? '3.5rem' : '3.25rem',
+                    padding: isMobile ? '0 1.25rem' : '0 1.125rem',
                     borderRadius: '0.5rem',
                     border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                     backgroundColor: theme === 'dark' ? '#334155' : 'white',
                     color: theme === 'dark' ? '#f1f5f9' : '#111827',
                     transition: 'border-color 0.2s',
-                    outline: 'none'
+                    outline: 'none',
+                    fontSize: isMobile ? '1rem' : '0.975rem'
                   }}
                   onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
                   onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
@@ -599,14 +600,14 @@ export default function DashboardPage() {
                   type="submit"
                   disabled={isCreating}
                   style={{
-                    height: '3rem',
+                    height: isMobile ? '3.5rem' : '3.25rem',
                     padding: '0 2rem',
                     borderRadius: '0.5rem',
                     background: isCreating ? '#9ca3af' : 'linear-gradient(135deg, #9333ea, #3b82f6)',
                     color: 'white',
                     border: 'none',
                     cursor: isCreating ? 'not-allowed' : 'pointer',
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '1.05rem' : '1rem',
                     fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
