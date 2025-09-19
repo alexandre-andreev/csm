@@ -76,7 +76,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const deleteSummary = async () => {
     if (!summary) return
 
-    if (!confirm('Вы уверены, что хотите удалить эту аннотацию?')) return
+    // showing confirm modal instead of confirm() handled below
 
     try {
       const response = await fetch(`/api/summaries/${summary.id}`, {
@@ -319,8 +319,8 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                   >
                     <FileText style={{ width: '1rem', height: '1rem' }} />
                   </button>
-                  <button
-                    onClick={deleteSummary}
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
                     style={{
                       padding: '0.5rem 0.75rem',
                       borderRadius: '0.375rem',
@@ -388,7 +388,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
             
             
             <button
-              onClick={deleteSummary}
+              onClick={() => setShowDeleteConfirm(true)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -418,7 +418,64 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
 
         </nav>
 
-        {/* Mobile Menu Dropdown removed */}
+        {/* Delete confirmation modal */}
+        {showDeleteConfirm && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}>
+            <div style={{
+              background: theme === 'dark' ? '#1f2937' : '#ffffff',
+              color: theme === 'dark' ? '#e5e7eb' : '#111827',
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              width: '100%',
+              maxWidth: '420px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>Удалить аннотацию?</h3>
+              <p style={{ margin: '0.75rem 0 1.25rem 0', fontSize: '0.9rem', opacity: 0.9 }}>
+                Это действие нельзя отменить. Аннотация будет удалена навсегда.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: theme === 'dark' ? '1px solid #374151' : '1px solid #d1d5db',
+                    background: 'transparent',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Отмена
+                </button>
+                <button
+                  onClick={async () => {
+                    await deleteSummary()
+                    router.push('/dashboard')
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #dc2626',
+                    background: '#dc2626',
+                    color: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       <div style={{
         maxWidth: '1200px',

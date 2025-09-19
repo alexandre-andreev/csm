@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText, Menu, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { markdownToText } from '@/lib/utils/markdown-to-text'
 import ProgressBar from '@/components/ui/ProgressBar'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -68,6 +69,32 @@ export default function DashboardPage() {
   const [isMobile, setIsMobile] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
+
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  const highlightMatch = (text: string, term: string) => {
+    if (!term.trim()) return text
+    try {
+      const regex = new RegExp(escapeRegExp(term), 'gi')
+      const parts = text.split(regex)
+      const matches = text.match(regex)
+      if (!matches) return text
+      const result: React.ReactNode[] = []
+      for (let i = 0; i < parts.length; i++) {
+        result.push(parts[i])
+        if (i < matches.length) {
+          result.push(
+            <mark key={`m-${i}`} style={{ backgroundColor: theme === 'dark' ? '#4c1d95' : '#fef08a', color: 'inherit', padding: '0 2px', borderRadius: '2px' }}>
+              {matches[i]}
+            </mark>
+          )
+        }
+      }
+      return result
+    } catch {
+      return text
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -768,7 +795,7 @@ export default function DashboardPage() {
                           lineHeight: '1.4',
                           wordBreak: 'break-word'
                         }}>
-                          {summary.video_title}
+                          {highlightMatch(summary.video_title, searchTerm)}
                         </h3>
                         <div 
                           className="prose prose-sm max-w-none"
@@ -781,9 +808,12 @@ export default function DashboardPage() {
                             color: theme === 'dark' ? '#cbd5e1' : '#6b7280'
                           }}
                         >
-                          <ReactMarkdown>
-                            {cleanSummaryText(summary.summary_text, summary.video_title)}
-                          </ReactMarkdown>
+                          {highlightMatch(
+                            markdownToText(
+                              cleanSummaryText(summary.summary_text, summary.video_title)
+                            ),
+                            searchTerm
+                          )}
                         </div>
                       </div>
                       
