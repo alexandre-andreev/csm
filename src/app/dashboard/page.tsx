@@ -300,16 +300,7 @@ export default function DashboardPage() {
     setAllowLoadMore(false)
   }, [searchTerm, summaries.length])
 
-  useEffect(() => {
-    // Разрешаем автодогрузку только после явного взаимодействия: колесо мыши или касание
-    const enable = () => setAllowLoadMore(true)
-    window.addEventListener('wheel', enable, { once: true, passive: true })
-    window.addEventListener('touchmove', enable, { once: true, passive: true })
-    return () => {
-      window.removeEventListener('wheel', enable)
-      window.removeEventListener('touchmove', enable)
-    }
-  }, [])
+  // Автодогрузка будет включена после первого нажатия "Показать ещё"
 
   useEffect(() => {
     const sentinel = sentinelRef.current
