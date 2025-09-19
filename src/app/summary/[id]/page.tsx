@@ -30,6 +30,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
   const { theme } = useTheme()
   const router = useRouter()
 
@@ -67,6 +68,15 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
         const data = await response.json()
         setSummary(data)
         setTags(Array.isArray(data?.tags) ? data.tags : [])
+        // fetch user summaries for suggestions
+        try {
+          const allResp = await fetch('/api/summaries')
+          if (allResp.ok) {
+            const list = await allResp.json()
+            const all = Array.from(new Set((Array.isArray(list) ? list : []).flatMap((s: any) => Array.isArray(s.tags) ? s.tags : [])))
+            setTagSuggestions(all as string[])
+          }
+        } catch {}
       } else {
         router.push('/dashboard')
       }
@@ -729,6 +739,35 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                         outline: 'none'
                       }}
                     />
+                    {/* Suggestions dropdown */}
+                    {newTag.trim().length > 0 && tagSuggestions.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        marginTop: isMobile ? '2.6rem' : '2.35rem',
+                        background: theme === 'dark' ? '#0f172a' : '#ffffff',
+                        color: theme === 'dark' ? '#e5e7eb' : '#111827',
+                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #e5e7eb',
+                        borderRadius: '0.5rem',
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
+                        zIndex: 20,
+                        maxHeight: 220,
+                        overflowY: 'auto',
+                        minWidth: '200px'
+                      }}>
+                        {tagSuggestions
+                          .filter(t => t && t.toLowerCase().includes(newTag.toLowerCase()) && !tags.map(x => x.toLowerCase()).includes(t.toLowerCase()))
+                          .slice(0, 8)
+                          .map(s => (
+                            <div key={s}
+                              onMouseDown={(e) => { e.preventDefault(); setNewTag(s) }}
+                              onClick={async () => { await handleAddTag() }}
+                              style={{ padding: '0.4rem 0.6rem', cursor: 'pointer' }}
+                            >
+                              {s}
+                            </div>
+                          ))}
+                      </div>
+                    )}
                     <button onClick={handleAddTag} style={{
                       padding: '0.5rem 0.75rem',
                       borderRadius: '9999px',

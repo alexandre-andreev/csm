@@ -76,6 +76,8 @@ export default function DashboardPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [allowLoadMore, setAllowLoadMore] = useState(false)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false)
+  const [tagSearchQuery, setTagSearchQuery] = useState('')
   
   const formatISODuration = (value?: string): string => {
     if (!value) return ''
@@ -331,6 +333,8 @@ export default function DashboardPage() {
       .filter(Boolean)
   ))
 
+  const filteredAllTags = allTags.filter(t => t.toLowerCase().includes(tagSearchQuery.toLowerCase()))
+
   const filteredSummaries = summaries.filter(summary => {
     const matchesText = summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
@@ -397,6 +401,77 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* Tags Modal (mobile) */}
+      {isTagModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{
+            background: theme === 'dark' ? '#0f172a' : '#ffffff',
+            color: theme === 'dark' ? '#e5e7eb' : '#111827',
+            borderRadius: '0.75rem',
+            width: '100%',
+            maxWidth: '520px',
+            padding: '1rem',
+            border: theme === 'dark' ? '1px solid #475569' : '1px solid #e5e7eb'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ fontWeight: 600 }}>Фильтр по тегам</div>
+              <button onClick={() => setIsTagModalOpen(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: theme === 'dark' ? '#94a3b8' : '#6b7280' }}>✕</button>
+            </div>
+            <input
+              type="text"
+              value={tagSearchQuery}
+              onChange={(e) => setTagSearchQuery(e.target.value)}
+              placeholder="Поиск по тегам"
+              style={{
+                width: '100%',
+                height: '2.5rem',
+                padding: '0 0.75rem',
+                borderRadius: '0.5rem',
+                border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                backgroundColor: theme === 'dark' ? '#1e293b' : 'white',
+                color: theme === 'dark' ? '#f1f5f9' : '#111827',
+                outline: 'none',
+                marginBottom: '0.75rem'
+              }}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: 280, overflowY: 'auto' }}>
+              {filteredAllTags.map(tag => {
+                const active = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase())
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      setSelectedTags(prev => {
+                        const has = prev.some(t => t.toLowerCase() === tag.toLowerCase())
+                        return has ? prev.filter(t => t.toLowerCase() !== tag.toLowerCase()) : [...prev, tag]
+                      })
+                    }}
+                    style={{
+                      padding: '0.35rem 0.7rem',
+                      borderRadius: '9999px',
+                      border: active ? '1px solid #9333ea' : (theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db'),
+                      background: active ? 'linear-gradient(135deg, #9333ea, #3b82f6)' : (theme === 'dark' ? '#0f172a' : '#f3f4f6'),
+                      color: active ? '#fff' : (theme === 'dark' ? '#e5e7eb' : '#374151'),
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                    title={active ? 'Снять фильтр' : 'Фильтровать по тегу'}
+                  >
+                    {tag}
+                  </button>
+                )
+              })}
+              {filteredAllTags.length === 0 && (
+                <div style={{ color: theme === 'dark' ? '#94a3b8' : '#6b7280', fontSize: '0.875rem' }}>Ничего не найдено</div>
+              )}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.75rem' }}>
+              <button onClick={() => setSelectedTags([])} style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db', background: 'transparent', cursor: 'pointer' }}>Сбросить</button>
+              <button onClick={() => { setIsTagModalOpen(false); setPage(1); setAllowLoadMore(false); }} style={{ padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid #9333ea', background: 'linear-gradient(135deg, #9333ea, #3b82f6)', color: '#fff', cursor: 'pointer' }}>Применить</button>
+            </div>
+          </div>
+        </div>
+      )}
       <ProgressBar 
         progress={progress} 
         text={progressText} 
@@ -816,44 +891,61 @@ export default function DashboardPage() {
                     onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
                   />
                 </div>
-                {/* Tags filter chips */}
+                {/* Tags filter control */}
                 {allTags.length > 0 && (
-                  <div style={{
-                    display: 'flex',
-                    flexWrap: isMobile ? 'nowrap' : 'wrap',
-                    overflowX: isMobile ? 'auto' : 'visible',
-                    gap: '0.5rem',
-                    paddingBottom: isMobile ? '0.25rem' : 0,
-                    maxWidth: '100%'
-                  }}>
-                    {allTags.map(tag => {
-                      const active = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase())
-                      return (
-                        <button
-                          key={tag}
-                          onClick={() => {
-                            setPage(1)
-                            setAllowLoadMore(false)
-                            setSelectedTags(prev => {
-                              const has = prev.some(t => t.toLowerCase() === tag.toLowerCase())
-                              return has ? prev.filter(t => t.toLowerCase() !== tag.toLowerCase()) : [...prev, tag]
-                            })
-                          }}
-                          style={{
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '9999px',
-                            border: active ? '1px solid #9333ea' : (theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db'),
-                            background: active ? 'linear-gradient(135deg, #9333ea, #3b82f6)' : (theme === 'dark' ? '#0f172a' : '#f3f4f6'),
-                            color: active ? '#fff' : (theme === 'dark' ? '#e5e7eb' : '#374151'),
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap'
-                          }}
-                          title={active ? 'Снять фильтр' : 'Фильтровать по тегу'}
-                        >
-                          {tag}
-                        </button>
-                      )
-                    })}
+                  <div>
+                    {isMobile ? (
+                      <button
+                        onClick={() => setIsTagModalOpen(true)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: '0.5rem',
+                          border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                          background: 'transparent',
+                          color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                          cursor: 'pointer'
+                        }}
+                        title="Фильтр по тегам"
+                      >
+                        Теги ({selectedTags.length})
+                      </button>
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem',
+                        maxWidth: '100%'
+                      }}>
+                        {allTags.map(tag => {
+                          const active = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase())
+                          return (
+                            <button
+                              key={tag}
+                              onClick={() => {
+                                setPage(1)
+                                setAllowLoadMore(false)
+                                setSelectedTags(prev => {
+                                  const has = prev.some(t => t.toLowerCase() === tag.toLowerCase())
+                                  return has ? prev.filter(t => t.toLowerCase() !== tag.toLowerCase()) : [...prev, tag]
+                                })
+                              }}
+                              style={{
+                                padding: '0.25rem 0.6rem',
+                                borderRadius: '9999px',
+                                border: active ? '1px solid #9333ea' : (theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db'),
+                                background: active ? 'linear-gradient(135deg, #9333ea, #3b82f6)' : (theme === 'dark' ? '#0f172a' : '#f3f4f6'),
+                                color: active ? '#fff' : (theme === 'dark' ? '#e5e7eb' : '#374151'),
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap'
+                              }}
+                              title={active ? 'Снять фильтр' : 'Фильтровать по тегу'}
+                            >
+                              {tag}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
