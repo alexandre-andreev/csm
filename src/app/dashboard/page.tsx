@@ -788,8 +788,7 @@ export default function DashboardPage() {
                       
                       <div style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        flexDirection: 'column',
                         gap: '0.5rem',
                         marginTop: 'auto'
                       }}>
@@ -810,9 +809,10 @@ export default function DashboardPage() {
                         
                         <div style={{
                           display: 'flex',
-                          flexDirection: isMobile ? 'column' : 'row',
-                          alignItems: isMobile ? 'stretch' : 'center',
-                          gap: isMobile ? '0.75rem' : '0.5rem'
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'flex-start',
+                          gap: '0.5rem'
                         }}>
                           <button
                             onClick={() => exportToMarkdown(summary.id)}
