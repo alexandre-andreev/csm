@@ -25,7 +25,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [id, setId] = useState<string>('')
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  // mobile context menu removed; use dedicated buttons instead
   const { theme } = useTheme()
   const router = useRouter()
 
@@ -302,22 +302,40 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 }}>
                   <ThemeToggle />
                   <button
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    onClick={exportToMarkdown}
                     style={{
-                      padding: '0.5rem',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '0.375rem',
+                      border: '1px solid #3b82f6',
+                      backgroundColor: theme === 'dark' ? '#1e3a8a' : '#eff6ff',
+                      color: '#3b82f6',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}
+                    title="Экспорт в Markdown"
+                  >
+                    <FileText style={{ width: '1rem', height: '1rem' }} />
+                  </button>
+                  <button
+                    onClick={deleteSummary}
+                    style={{
+                      padding: '0.5rem 0.75rem',
                       borderRadius: '0.375rem',
                       border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                       backgroundColor: 'transparent',
-                      color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                      color: '#dc2626',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease-in-out'
+                      transition: 'all 0.2s ease-in-out',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
                     }}
+                    title="Удалить аннотацию"
                   >
-                    {isMobileMenuOpen ? (
-                      <X style={{ width: '1.25rem', height: '1.25rem' }} />
-                    ) : (
-                      <Menu style={{ width: '1.25rem', height: '1.25rem' }} />
-                    )}
+                    <Trash2 style={{ width: '1rem', height: '1rem' }} />
                   </button>
                 </div>
               )}
@@ -400,75 +418,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
 
         </nav>
 
-        {/* Mobile Menu Dropdown */}
-        {isMobileMenuOpen && (
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            background: theme === 'dark' 
-              ? 'rgba(30, 41, 59, 0.95)' 
-              : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderBottom: theme === 'dark' 
-              ? '1px solid rgba(71, 85, 105, 0.3)' 
-              : '1px solid rgba(255, 255, 255, 0.2)',
-            padding: '1rem',
-            zIndex: 50
-          }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem'
-            }}>
-              <button
-                onClick={exportToMarkdown}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: '1px solid #3b82f6',
-                  backgroundColor: theme === 'dark' ? '#1e3a8a' : '#eff6ff',
-                  color: '#3b82f6',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease-in-out',
-                  fontSize: '0.9rem',
-                  fontWeight: '500'
-                }}
-              >
-                <FileText style={{ width: '1rem', height: '1rem' }} />
-                Экспорт в Markdown
-              </button>
-              
-              <button
-                onClick={deleteSummary}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
-                  backgroundColor: 'transparent',
-                  color: '#dc2626',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease-in-out',
-                  fontSize: '0.9rem',
-                  fontWeight: '500'
-                }}
-              >
-                <Trash2 style={{ width: '1rem', height: '1rem' }} />
-                Удалить аннотацию
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Mobile Menu Dropdown removed */}
 
       <div style={{
         maxWidth: '1200px',
