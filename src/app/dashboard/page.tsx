@@ -73,6 +73,7 @@ export default function DashboardPage() {
   const [page, setPage] = useState(1)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [allowLoadMore, setAllowLoadMore] = useState(false)
 
   const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -296,7 +297,19 @@ export default function DashboardPage() {
   useEffect(() => {
     // Reset pagination when search term changes or summaries list updates
     setPage(1)
+    setAllowLoadMore(false)
   }, [searchTerm, summaries.length])
+
+  useEffect(() => {
+    // Разрешаем автодогрузку только после взаимодействия пользователя (скролл/тач)
+    const enable = () => setAllowLoadMore(true)
+    window.addEventListener('scroll', enable, { once: true, passive: true })
+    window.addEventListener('touchstart', enable, { once: true, passive: true })
+    return () => {
+      window.removeEventListener('scroll', enable)
+      window.removeEventListener('touchstart', enable)
+    }
+  }, [])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -304,15 +317,15 @@ export default function DashboardPage() {
 
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0]
-      if (entry.isIntersecting && hasMore) {
+      if (entry.isIntersecting && hasMore && allowLoadMore) {
         setIsLoadingMore(true)
         setPage((prev) => prev + 1)
       }
-    }, { threshold: 0.1 })
+    }, { threshold: 0.1, rootMargin: '200px 0px' })
 
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [visibleSummaries.length, filteredSummaries.length, hasMore])
+  }, [visibleSummaries.length, filteredSummaries.length, hasMore, allowLoadMore])
 
   useEffect(() => {
     // скрываем индикатор после подгрузки порции
