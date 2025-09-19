@@ -27,6 +27,8 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [isMobile, setIsMobile] = useState(false)
   // mobile context menu removed; use dedicated buttons instead
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [tags, setTags] = useState<string[]>([])
+  const [newTag, setNewTag] = useState('')
   const { theme } = useTheme()
   const router = useRouter()
 
@@ -55,6 +57,17 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     if (id) {
       fetchSummary()
     }
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    try {
+      const raw = localStorage.getItem(`summary_tags_${id}`)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) setTags(parsed.filter(t => typeof t === 'string'))
+      }
+    } catch {}
   }, [id])
 
   const fetchSummary = async () => {
@@ -166,6 +179,26 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
       console.error('Clipboard error:', e)
       alert('Не удалось скопировать аннотацию')
     }
+  }
+
+  const saveTags = (next: string[]) => {
+    setTags(next)
+    try { localStorage.setItem(`summary_tags_${id}`, JSON.stringify(next)) } catch {}
+  }
+
+  const handleAddTag = () => {
+    const value = (newTag || '').trim().replace(/\s+/g, ' ')
+    if (!value) return
+    const normalized = value.slice(0, 24)
+    const exists = tags.some(t => t.toLowerCase() === normalized.toLowerCase())
+    if (exists) { setNewTag(''); return }
+    if (tags.length >= 8) { alert('Максимум 8 тегов'); return }
+    saveTags([...tags, normalized])
+    setNewTag('')
+  }
+
+  const handleRemoveTag = (tag: string) => {
+    saveTags(tags.filter(t => t !== tag))
   }
 
 
@@ -625,6 +658,82 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 <ExternalLink style={{ width: '1rem', height: '1rem' }} />
                 Открыть видео на YouTube
               </a>
+
+              {/* Tags editor */}
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: theme === 'dark' ? '#94a3b8' : '#6b7280',
+                  marginBottom: '0.5rem'
+                }}>
+                  Теги
+                </div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  gap: '0.5rem',
+                  alignItems: isMobile ? 'stretch' : 'center'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: isMobile ? 'nowrap' : 'wrap',
+                    overflowX: isMobile ? 'auto' : 'visible',
+                    gap: '0.5rem',
+                    paddingBottom: isMobile ? '0.25rem' : 0
+                  }}>
+                    {tags.map(tag => (
+                      <span key={tag} style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '9999px',
+                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                        background: theme === 'dark' ? '#0f172a' : '#f3f4f6',
+                        color: theme === 'dark' ? '#e5e7eb' : '#374151',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {tag}
+                        <button onClick={() => handleRemoveTag(tag)} title="Удалить тег" style={{
+                          border: 'none', background: 'transparent', color: '#9ca3af', cursor: 'pointer'
+                        }}>×</button>
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flex: isMobile ? '1' : '0' }}>
+                    <input
+                      type="text"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Новый тег"
+                      maxLength={24}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag() } }}
+                      style={{
+                        flex: 1,
+                        height: isMobile ? '2.5rem' : '2.25rem',
+                        padding: '0 0.75rem',
+                        borderRadius: '9999px',
+                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                        backgroundColor: theme === 'dark' ? '#334155' : 'white',
+                        color: theme === 'dark' ? '#f1f5f9' : '#111827',
+                        outline: 'none'
+                      }}
+                    />
+                    <button onClick={handleAddTag} style={{
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '9999px',
+                      border: '1px solid #9333ea',
+                      background: 'linear-gradient(135deg, #9333ea, #3b82f6)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}>Добавить</button>
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#64748b' : '#9ca3af', marginTop: '0.25rem' }}>
+                  До 8 тегов, максимум 24 символа каждый
+                </div>
+              </div>
             </div>
           </div>
         </div>

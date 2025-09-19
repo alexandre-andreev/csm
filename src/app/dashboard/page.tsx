@@ -911,6 +911,37 @@ export default function DashboardPage() {
                         }}>
                           {highlightMatch(summary.video_title, searchTerm)}
                         </h3>
+                        {/* Tags (read-only from localStorage) */}
+                        <div style={{
+                          display: 'flex',
+                          flexWrap: isMobile ? 'nowrap' : 'wrap',
+                          overflowX: isMobile ? 'auto' : 'visible',
+                          gap: '0.5rem',
+                          marginBottom: '0.5rem'
+                        }}>
+                          {(typeof window !== 'undefined') && (() => {
+                            try {
+                              const raw = localStorage.getItem(`summary_tags_${summary.id}`)
+                              const tags = raw ? JSON.parse(raw) : []
+                              if (!Array.isArray(tags) || tags.length === 0) return null
+                              return tags.map((tag: string) => (
+                                <span key={tag} style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  padding: '0.2rem 0.5rem',
+                                  borderRadius: '9999px',
+                                  border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                                  background: theme === 'dark' ? '#0f172a' : '#f3f4f6',
+                                  color: theme === 'dark' ? '#e5e7eb' : '#374151',
+                                  fontSize: '0.75rem',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {tag}
+                                </span>
+                              ))
+                            } catch { return null }
+                          })()}
+                        </div>
                         <div 
                           className="prose prose-sm max-w-none"
                           style={{
