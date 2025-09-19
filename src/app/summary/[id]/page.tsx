@@ -293,6 +293,34 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               }}>
                 <Sparkles style={{ width: '1.25rem', height: '1.25rem', color: 'white' }} />
               </div>
+              {isMobile && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginLeft: '0.5rem'
+                }}>
+                  <ThemeToggle />
+                  <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '0.375rem',
+                      border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                      backgroundColor: 'transparent',
+                      color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                  >
+                    {isMobileMenuOpen ? (
+                      <X style={{ width: '1.25rem', height: '1.25rem' }} />
+                    ) : (
+                      <Menu style={{ width: '1.25rem', height: '1.25rem' }} />
+                    )}
+                  </button>
+                </div>
+              )}
               <span style={{
                 fontSize: isMobile ? '1rem' : '1.25rem',
                 fontWeight: 'bold',
@@ -370,32 +398,6 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
           </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div style={{
-            display: isMobile ? 'flex' : 'none',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            <ThemeToggle />
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              style={{
-                padding: '0.5rem',
-                borderRadius: '0.375rem',
-                border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
-                backgroundColor: 'transparent',
-                color: theme === 'dark' ? '#f1f5f9' : '#374151',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out'
-              }}
-            >
-              {isMobileMenuOpen ? (
-                <X style={{ width: '1.25rem', height: '1.25rem' }} />
-              ) : (
-                <Menu style={{ width: '1.25rem', height: '1.25rem' }} />
-              )}
-            </button>
-          </div>
         </nav>
 
         {/* Mobile Menu Dropdown */}
@@ -440,7 +442,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 }}
               >
                 <FileText style={{ width: '1rem', height: '1rem' }} />
-                Экспорт MD
+                Экспорт в Markdown
               </button>
               
               <button
