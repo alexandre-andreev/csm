@@ -180,26 +180,35 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tags: next })
       })
-      if (resp.ok) {
-        const updated = await resp.json()
-        setTags(Array.isArray(updated?.tags) ? updated.tags : next)
+      const data = await resp.json().catch(() => ({}))
+      if (!resp.ok) {
+        const msg = data?.error || 'Не удалось сохранить теги'
+        alert(msg)
+        // revert UI
+        setTags(Array.isArray(summary?.tags) ? summary!.tags! : [])
+        return
       }
-    } catch {}
+      const updated = data
+      setTags(Array.isArray(updated?.tags) ? updated.tags : next)
+    } catch (e) {
+      alert('Ошибка сети при сохранении тегов')
+      setTags(Array.isArray(summary?.tags) ? summary!.tags! : [])
+    }
   }
 
-  const handleAddTag = () => {
+  const handleAddTag = async () => {
     const value = (newTag || '').trim().replace(/\s+/g, ' ')
     if (!value) return
     const normalized = value.slice(0, 24)
     const exists = tags.some(t => t.toLowerCase() === normalized.toLowerCase())
     if (exists) { setNewTag(''); return }
     if (tags.length >= 3) { alert('Максимум 3 тега'); return }
-    saveTags([...tags, normalized])
+    await saveTags([...tags, normalized])
     setNewTag('')
   }
 
-  const handleRemoveTag = (tag: string) => {
-    saveTags(tags.filter(t => t !== tag))
+  const handleRemoveTag = async (tag: string) => {
+    await saveTags(tags.filter(t => t !== tag))
   }
 
 
