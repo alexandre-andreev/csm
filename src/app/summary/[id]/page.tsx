@@ -26,6 +26,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   // mobile context menu removed; use dedicated buttons instead
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
 
