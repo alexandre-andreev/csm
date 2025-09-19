@@ -1017,8 +1017,9 @@ export default function DashboardPage() {
                       style={{
                         padding: '0.5rem 1rem',
                         borderRadius: '0.5rem',
-                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
-                        background: 'transparent',
+                        border: theme === 'dark' ? '1px solid #f59e0b' : '1px solid #d1d5db',
+                        background: theme === 'dark' ? '#fbbf24' : 'transparent',
+                        color: theme === 'dark' ? '#111827' : 'inherit',
                         cursor: 'pointer'
                       }}
                     >
@@ -1032,12 +1033,13 @@ export default function DashboardPage() {
                 {page > 1 && (
                   <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
                     <button
-                      onClick={() => setPage(1)}
+                      onClick={() => { setPage(1); setAllowLoadMore(false); setIsLoadingMore(false) }}
                       style={{
                         padding: '0.5rem 1rem',
                         borderRadius: '0.5rem',
-                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
-                        background: 'transparent',
+                        border: theme === 'dark' ? '1px solid #f59e0b' : '1px solid #d1d5db',
+                        background: theme === 'dark' ? '#fbbf24' : 'transparent',
+                        color: theme === 'dark' ? '#111827' : 'inherit',
                         cursor: 'pointer'
                       }}
                     >
