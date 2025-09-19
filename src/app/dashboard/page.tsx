@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, Filter, Trash2, Eye, LogOut, Sparkles, Clock, Users, BarChart3, Download, FileText, Menu, X } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -69,6 +69,10 @@ export default function DashboardPage() {
   const [isMobile, setIsMobile] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
+  const PAGE_SIZE = 4
+  const [page, setPage] = useState(1)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -286,6 +290,37 @@ export default function DashboardPage() {
     summary.video_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     summary.summary_text.toLowerCase().includes(searchTerm.toLowerCase())
   )
+  const visibleSummaries = filteredSummaries.slice(0, page * PAGE_SIZE)
+  const hasMore = visibleSummaries.length < filteredSummaries.length
+
+  useEffect(() => {
+    // Reset pagination when search term changes or summaries list updates
+    setPage(1)
+  }, [searchTerm, summaries.length])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && hasMore) {
+        setIsLoadingMore(true)
+        setPage((prev) => prev + 1)
+      }
+    }, { threshold: 0.1 })
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [visibleSummaries.length, filteredSummaries.length, hasMore])
+
+  useEffect(() => {
+    // скрываем индикатор после подгрузки порции
+    if (isLoadingMore) {
+      const t = setTimeout(() => setIsLoadingMore(false), 150)
+      return () => clearTimeout(t)
+    }
+  }, [visibleSummaries.length])
 
   const totalProcessingTime = summaries.reduce((acc, s) => acc + s.processing_time, 0)
   const averageProcessingTime = summaries.length > 0 ? Math.round(totalProcessingTime / summaries.length / 1000) : 0
@@ -759,7 +794,7 @@ export default function DashboardPage() {
                 flexDirection: 'column',
                 gap: '1rem'
               }}>
-                {filteredSummaries.map((summary) => (
+                {visibleSummaries.map((summary) => (
                   <div
                     key={summary.id}
                     className="dashboard-summary"
@@ -949,6 +984,21 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
+                {/* Loading indicator & infinite scroll sentinel */}
+                {isLoadingMore && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    padding: '0.5rem',
+                    color: theme === 'dark' ? '#94a3b8' : '#6b7280',
+                    fontSize: '0.875rem'
+                  }}>
+                    Загружаю ещё...
+                  </div>
+                )}
+                {hasMore && (
+                  <div ref={sentinelRef} style={{ height: 1 }} />
+                )}
               </div>
             )}
           </div>
