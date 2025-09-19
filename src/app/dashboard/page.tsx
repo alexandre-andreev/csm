@@ -863,15 +863,19 @@ export default function DashboardPage() {
                             marginBottom: '0.5rem'
                           }}>
                             {summary.thumbnail_url && (
-                              <div style={{
-                                position: 'relative',
-                                width: isMobile ? '120px' : '160px',
-                                aspectRatio: '16 / 9',
-                                borderRadius: '0.5rem',
-                                overflow: 'hidden',
-                                background: theme === 'dark' ? '#1f2937' : '#e5e7eb',
-                                flexShrink: 0
-                              }}>
+                              <div
+                                onClick={() => router.push(`/summary/${summary.id}`)}
+                                style={{
+                                  position: 'relative',
+                                  width: isMobile ? '120px' : '160px',
+                                  aspectRatio: '16 / 9',
+                                  borderRadius: '0.5rem',
+                                  overflow: 'hidden',
+                                  background: theme === 'dark' ? '#1f2937' : '#e5e7eb',
+                                  flexShrink: 0,
+                                  cursor: 'pointer'
+                                }}
+                              >
                                 <img
                                   src={summary.thumbnail_url}
                                   alt="thumbnail"
@@ -962,6 +966,37 @@ export default function DashboardPage() {
                           gap: '0.5rem'
                         }}>
                           <button
+                            onClick={() => router.push(`/summary/${summary.id}`)}
+                            title="Просмотреть полную аннотацию"
+                            style={{
+                              padding: isMobile ? '0.75rem 1rem' : '0.5rem',
+                              borderRadius: '0.375rem',
+                              border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                              backgroundColor: theme === 'dark' ? '#1e293b' : 'white',
+                              color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease-in-out',
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.25rem',
+                              fontSize: isMobile ? '0.875rem' : '0.75rem',
+                              fontWeight: '500',
+                              minHeight: isMobile ? '44px' : 'auto'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.borderColor = '#9333ea'
+                              e.currentTarget.style.color = '#9333ea'
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
+                              e.currentTarget.style.color = theme === 'dark' ? '#f1f5f9' : '#374151'
+                            }}
+                          >
+                            <Eye style={{ width: '1rem', height: '1rem' }} />
+                          </button>
+                          <button
                             onClick={() => exportToMarkdown(summary.id)}
                             title="Экспортировать в Markdown"
                             style={{
@@ -994,39 +1029,6 @@ export default function DashboardPage() {
                           >
                             <FileText style={{ width: '0.875rem', height: '0.875rem' }} />
                             MD
-                          </button>
-                          
-                          
-                          <button
-                            onClick={() => router.push(`/summary/${summary.id}`)}
-                            title="Просмотреть полную аннотацию"
-                            style={{
-                              padding: isMobile ? '0.75rem 1rem' : '0.5rem',
-                              borderRadius: '0.375rem',
-                              border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
-                              backgroundColor: theme === 'dark' ? '#1e293b' : 'white',
-                              color: theme === 'dark' ? '#f1f5f9' : '#374151',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease-in-out',
-                              flexShrink: 0,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.25rem',
-                              fontSize: isMobile ? '0.875rem' : '0.75rem',
-                              fontWeight: '500',
-                              minHeight: isMobile ? '44px' : 'auto'
-                            }}
-                            onMouseOver={(e) => {
-                              e.currentTarget.style.borderColor = '#9333ea'
-                              e.currentTarget.style.color = '#9333ea'
-                            }}
-                            onMouseOut={(e) => {
-                              e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'
-                              e.currentTarget.style.color = theme === 'dark' ? '#f1f5f9' : '#374151'
-                            }}
-                          >
-                            <Eye style={{ width: '1rem', height: '1rem' }} />
                           </button>
                           
                           <button

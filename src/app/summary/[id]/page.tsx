@@ -331,7 +331,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                   >
                     <FileText style={{ width: '1rem', height: '1rem' }} />
                   </button>
-                <button
+                  <button
                   onClick={() => setShowDeleteConfirm(true)}
                     style={{
                       padding: '0.5rem 0.75rem',
@@ -348,6 +348,24 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                     title="Удалить аннотацию"
                   >
                     <Trash2 style={{ width: '1rem', height: '1rem' }} />
+                  </button>
+                  <button
+                    onClick={copySummaryToClipboard}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '0.375rem',
+                      border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                      backgroundColor: 'transparent',
+                      color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}
+                    title="Копировать аннотацию"
+                  >
+                    <Copy style={{ width: '1rem', height: '1rem' }} />
                   </button>
                 </div>
               )}
