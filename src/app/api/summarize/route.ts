@@ -98,9 +98,30 @@ export async function POST(request: NextRequest) {
     console.error('Ошибка создания аннотации:', error)
     
     if (error instanceof Error) {
+      const message = error.message || 'Произошла ошибка'
+      let status = 400
+      let userMessage = message
+
+      if (message.startsWith('NO_TRANSCRIPT')) {
+        status = 422
+        userMessage = 'Для данного видео недоступен транскрипт/субтитры. Создание аннотации невозможно.'
+      } else if (message.startsWith('VIDEO_NOT_FOUND')) {
+        status = 404
+        userMessage = 'Видео не найдено. Проверьте ссылку или доступность видео.'
+      } else if (message.startsWith('TRANSCRIPT_FORBIDDEN')) {
+        status = 403
+        userMessage = 'Доступ к транскрипту ограничен. Вероятно, видео приватное или защищено.'
+      } else if (message.startsWith('CONFIG_MISSING')) {
+        status = 500
+        userMessage = 'Сервис временно недоступен: отсутствует конфигурация.'
+      } else if (message.startsWith('TRANSCRIPT_API_ERROR')) {
+        status = 502
+        userMessage = 'Внешний сервис транскрипции вернул ошибку. Попробуйте позже.'
+      }
+
       return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
+        { error: userMessage, code: message.split(':')[0] },
+        { status }
       )
     }
 

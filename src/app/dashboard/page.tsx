@@ -205,10 +205,17 @@ export default function DashboardPage() {
         router.push(`/summary/${result.id}`)
       } else {
         setProgressText(`Ошибка: ${result.error || 'Неизвестная ошибка'}`)
+        if (result && result.error) {
+          alert(result.error)
+        } else {
+          alert('Не удалось создать аннотацию')
+        }
         setShowProgressBar(false)
       }
     } catch (err: any) {
-      setProgressText(`Ошибка: ${err.message || 'Произошла ошибка'}`)
+      const message = err?.message || 'Произошла ошибка'
+      setProgressText(`Ошибка: ${message}`)
+      alert(message)
       setShowProgressBar(false)
     } finally {
       setIsCreating(false)

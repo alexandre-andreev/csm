@@ -25,7 +25,7 @@ function sanitizeTextForAPI(text: string): string {
 async function fetchTranscriptData(videoId: string): Promise<any> {
   const apiKey = process.env.TRANSCRIPT_API_KEY
   if (!apiKey) {
-    throw new Error('API ключ для получения транскрипта не настроен')
+    throw new Error('CONFIG_MISSING: API ключ для получения транскрипта не настроен')
   }
 
   const response = await fetch('https://www.youtube-transcript.io/api/transcripts', {
@@ -40,7 +40,13 @@ async function fetchTranscriptData(videoId: string): Promise<any> {
   const responseText = await response.text();
   if (!response.ok) {
     console.error(`Ошибка от youtube-transcript.io. Status: ${response.status}. Body: ${responseText}`);
-    throw new Error(`Ошибка получения данных от youtube-transcript.io: ${response.status}`);
+    if (response.status === 404) {
+      throw new Error('VIDEO_NOT_FOUND: Видео не найдено или удалено.')
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('TRANSCRIPT_FORBIDDEN: Доступ к транскрипту ограничен.')
+    }
+    throw new Error(`TRANSCRIPT_API_ERROR: Ошибка получения данных от youtube-transcript.io: ${response.status}`)
   }
 
   try {
@@ -50,7 +56,7 @@ async function fetchTranscriptData(videoId: string): Promise<any> {
   } catch (jsonError) {
     console.error('Не удалось распарсить JSON-ответ от youtube-transcript.io.');
     console.error('Сырое тело ответа:', responseText);
-    throw new Error('Сервер youtube-transcript.io вернул некорректный JSON.');
+    throw new Error('TRANSCRIPT_API_ERROR: Сервер youtube-transcript.io вернул некорректный JSON.');
   }
 }
 
@@ -59,7 +65,7 @@ export async function getYouTubeVideoInfo(videoId: string): Promise<YouTubeVideo
 
   if (!Array.isArray(data) || data.length === 0 || !data[0].id) {
     console.error('Неожиданная структура API (video info):', JSON.stringify(data, null, 2));
-    throw new Error('Видео не найдено или имеет неожиданный формат ответа.');
+    throw new Error('VIDEO_NOT_FOUND: Видео не найдено или имеет неожиданный формат ответа.');
   }
   
   const videoData = data[0];
@@ -78,12 +84,16 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
   
   if (!Array.isArray(data) || data.length === 0 || !data[0].tracks || !Array.isArray(data[0].tracks) || data[0].tracks.length === 0 || !data[0].tracks[0].transcript) {
     console.error('Неожиданная структура API (transcript):', JSON.stringify(data, null, 2));
-    throw new Error('Не удалось получить транскрипт. Возможно, у видео нет субтитров.');
+    throw new Error('NO_TRANSCRIPT: У видео нет доступного транскрипта или субтитров.');
   }
 
   const transcriptSegments = data[0].tracks[0].transcript;
   const rawText = transcriptSegments.map((segment: any) => segment.text).join(' ');
   const sanitizedText = sanitizeTextForAPI(rawText);
+
+  if (!sanitizedText || sanitizedText.trim().length === 0) {
+    throw new Error('NO_TRANSCRIPT: У видео нет доступного транскрипта или субтитров.')
+  }
 
   return sanitizedText;
 }
