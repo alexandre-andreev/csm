@@ -301,13 +301,13 @@ export default function DashboardPage() {
   }, [searchTerm, summaries.length])
 
   useEffect(() => {
-    // Разрешаем автодогрузку только после взаимодействия пользователя (скролл/тач)
+    // Разрешаем автодогрузку только после явного взаимодействия: колесо мыши или касание
     const enable = () => setAllowLoadMore(true)
-    window.addEventListener('scroll', enable, { once: true, passive: true })
-    window.addEventListener('touchstart', enable, { once: true, passive: true })
+    window.addEventListener('wheel', enable, { once: true, passive: true })
+    window.addEventListener('touchmove', enable, { once: true, passive: true })
     return () => {
-      window.removeEventListener('scroll', enable)
-      window.removeEventListener('touchstart', enable)
+      window.removeEventListener('wheel', enable)
+      window.removeEventListener('touchmove', enable)
     }
   }, [])
 
@@ -1009,8 +1009,41 @@ export default function DashboardPage() {
                     Загружаю ещё...
                   </div>
                 )}
-                {hasMore && (
+                {/* Fallback button to load more if auto-load is not yet enabled */}
+                {hasMore && !allowLoadMore && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
+                    <button
+                      onClick={() => { setPage((prev) => prev + 1); setAllowLoadMore(true) }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0.5rem',
+                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                        background: 'transparent',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Показать ещё
+                    </button>
+                  </div>
+                )}
+                {hasMore && allowLoadMore && (
                   <div ref={sentinelRef} style={{ height: 1 }} />
+                )}
+                {page > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
+                    <button
+                      onClick={() => setPage(1)}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0.5rem',
+                        border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                        background: 'transparent',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Свернуть
+                    </button>
+                  </div>
                 )}
               </div>
             )}
