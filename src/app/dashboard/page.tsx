@@ -881,20 +881,7 @@ export default function DashboardPage() {
                                   alt="thumbnail"
                                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                 />
-                                {summary.duration && (
-                                  <span style={{
-                                    position: 'absolute',
-                                    right: 6,
-                                    bottom: 6,
-                                    background: 'rgba(0,0,0,0.75)',
-                                    color: 'white',
-                                    fontSize: '0.75rem',
-                                    padding: '0.1rem 0.35rem',
-                                    borderRadius: '0.25rem'
-                                  }}>
-                                    {formatISODuration(summary.duration)}
-                                  </span>
-                                )}
+                                {/* Убрана накладка с длительностью на миниобложке */}
                               </div>
                             )}
                             {!summary.thumbnail_url && summary.duration && (
