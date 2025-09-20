@@ -890,7 +890,9 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
             color: theme === 'dark' ? '#cbd5e1' : 'inherit'
           }}>
             <ReactMarkdown>
-              {summary.summary_text}
+              {(
+                summary.summary_text || ''
+              ).replace(/(^|\n)####\s*Похожие видео\s*(\n|$)/g, (_m, p1, p2) => `${p1}#### Ссылки на похожие видео${p2}`)}
             </ReactMarkdown>
           </div>
           {Array.isArray(related) && related.length > 0 && (
@@ -900,7 +902,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 fontWeight: 600,
                 margin: '0 0 0.75rem 0',
                 color: theme === 'dark' ? '#f1f5f9' : '#111827'
-              }}>Похожие видео</h3>
+              }}>Создайте аннотации на похожие видео</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {related.map(item => {
                   const existsSummaryId = existingById[item.videoId]
