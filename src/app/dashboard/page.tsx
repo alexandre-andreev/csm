@@ -860,7 +860,7 @@ export default function DashboardPage() {
                 width: '100%',
                 overflow: 'hidden'
               }}>
-                <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex', alignItems: 'center' }}>
                   <Search style={{
                     position: 'absolute',
                     left: '0.75rem',
@@ -907,11 +907,12 @@ export default function DashboardPage() {
                           background: 'transparent',
                           color: theme === 'dark' ? '#f1f5f9' : '#374151',
                           cursor: 'pointer',
-                          width: '100%'
+                          width: '100%',
+                          textAlign: 'left'
                         }}
                         title="Фильтр по тегам"
                       >
-                        Теги ({selectedTags.length})
+                        Фильтр аннотаций по тегам ({selectedTags.length})
                       </button>
                     ) : (
                       <div style={{
