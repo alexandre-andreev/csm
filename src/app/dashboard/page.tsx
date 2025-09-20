@@ -1052,6 +1052,22 @@ export default function DashboardPage() {
                             )}
                           </div>
                         )}
+                        {/* Date/time under thumbnail */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '1rem',
+                          fontSize: '0.75rem',
+                          color: theme === 'dark' ? '#94a3b8' : '#9ca3af',
+                          marginBottom: '0.5rem'
+                        }}>
+                          <span>
+                            {new Date(summary.created_at).toLocaleDateString('ru-RU')}
+                          </span>
+                          <span>
+                            {Math.round(summary.processing_time / 1000)}с
+                          </span>
+                        </div>
                         <h3 style={{
                           fontSize: '1.125rem', // Increased from 1rem to 1.125rem (1 size larger)
                           fontWeight: '600',
@@ -1110,35 +1126,14 @@ export default function DashboardPage() {
                             searchTerm
                           )}
                         </div>
-                      </div>
-                      
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                        marginTop: 'auto'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '1rem',
-                          fontSize: '0.75rem',
-                          color: theme === 'dark' ? '#94a3b8' : '#9ca3af'
-                        }}>
-                          <span>
-                            {new Date(summary.created_at).toLocaleDateString('ru-RU')}
-                          </span>
-                          <span>
-                            {Math.round(summary.processing_time / 1000)}с
-                          </span>
-                        </div>
-                        
+                        {/* Action buttons after summary */}
                         <div style={{
                           display: 'flex',
                           flexDirection: 'row',
                           alignItems: 'center',
                           justifyContent: 'flex-start',
-                          gap: '0.5rem'
+                          gap: '0.5rem',
+                          marginTop: '0.5rem'
                         }}>
                           <button
                             onClick={() => router.push(`/summary/${summary.id}`)}
@@ -1205,7 +1200,6 @@ export default function DashboardPage() {
                             <FileText style={{ width: '0.875rem', height: '0.875rem' }} />
                             MD
                           </button>
-                          
                           <button
                             onClick={() => deleteSummary(summary.id)}
                             title="Удалить аннотацию"
@@ -1239,6 +1233,8 @@ export default function DashboardPage() {
                           </button>
                         </div>
                       </div>
+                      
+                      {/* Right column removed (moved date/buttons into left area) */}
                     </div>
                   </div>
                 ))}
