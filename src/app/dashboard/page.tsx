@@ -857,7 +857,8 @@ export default function DashboardPage() {
                 flexDirection: isMobile ? 'column' : 'row',
                 alignItems: 'stretch',
                 gap: '0.75rem',
-                width: '100%'
+                width: '100%',
+                overflow: 'hidden'
               }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
                   <Search style={{
@@ -895,7 +896,7 @@ export default function DashboardPage() {
 
                 {/* Tags filter control */}
                 {allTags.length > 0 && (
-                  <div style={{ flexShrink: 0 }}>
+                  <div style={{ flex: isMobile ? '0 0 auto' : '1 1 0%', minWidth: 0 }}>
                     {isMobile ? (
                       <button
                         onClick={() => setIsTagModalOpen(true)}
@@ -917,6 +918,7 @@ export default function DashboardPage() {
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: '0.5rem',
+                        width: '100%',
                         maxWidth: '100%',
                         overflowX: 'hidden'
                       }}>
@@ -940,7 +942,8 @@ export default function DashboardPage() {
                                 background: active ? 'linear-gradient(135deg, #9333ea, #3b82f6)' : (theme === 'dark' ? '#0f172a' : '#f3f4f6'),
                                 color: active ? '#fff' : (theme === 'dark' ? '#e5e7eb' : '#374151'),
                                 cursor: 'pointer',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0
                               }}
                               title={active ? 'Снять фильтр' : 'Фильтровать по тегу'}
                             >
