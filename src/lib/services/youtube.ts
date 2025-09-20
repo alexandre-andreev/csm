@@ -165,7 +165,7 @@ export async function getRelatedYouTubeVideos(
       items = Array.isArray(data2?.items) ? data2.items : []
     }
 
-    const results: Array<{ title: string; url: string }>> = []
+    const results: Array<{ title: string; url: string }> = []
     for (const item of items) {
       const vid = item?.id?.videoId
       const title = item?.snippet?.title || 'Видео'
