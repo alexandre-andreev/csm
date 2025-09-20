@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { extractVideoId, getYouTubeVideoInfo, getYouTubeTranscript } from '@/lib/services/youtube'
+import { extractVideoId, getYouTubeVideoInfo, getYouTubeTranscript, getRelatedYouTubeVideos } from '@/lib/services/youtube'
 import { generateSummary } from '@/lib/services/gemini'
 
 function parseDurationToSeconds(duration: string): number {
@@ -48,7 +48,20 @@ export async function POST(request: NextRequest) {
     ])
 
     // Генерируем аннотацию
-    const summary = await generateSummary(transcript, videoInfo.title)
+    let summary = await generateSummary(transcript, videoInfo.title)
+    
+    // Пытаемся получить до 3 похожих видео и дополняем аннотацию разделом в конце
+    try {
+      const related = await getRelatedYouTubeVideos(videoId, 3)
+      if (Array.isArray(related) && related.length > 0) {
+        const linksMd = related
+          .map((r, idx) => `${idx + 1}. [${r.title}](${r.url})`)
+          .join('\n')
+        summary += `\n\n#### Похожие видео\n${linksMd}`
+      }
+    } catch (e) {
+      console.warn('Не удалось получить похожие видео:', e)
+    }
 
     const processingTime = Date.now() - startTime
 

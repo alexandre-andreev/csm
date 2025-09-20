@@ -108,3 +108,49 @@ export function extractVideoId(url: string): string {
   
   return match[1]
 }
+
+/**
+ * Возвращает до maxResults похожих видео для указанного videoId с помощью YouTube Data API.
+ * Требуется переменная окружения YOUTUBE_DATA_API_KEY. В случае ошибок возвращает пустой список.
+ */
+export async function getRelatedYouTubeVideos(
+  videoId: string,
+  maxResults: number = 3
+): Promise<Array<{ title: string; url: string }>> {
+  const apiKey = process.env.YOUTUBE_DATA_API_KEY
+  if (!apiKey) {
+    // Тихо выходим, если ключ не настроен
+    return []
+  }
+
+  try {
+    const params = new URLSearchParams({
+      part: 'snippet',
+      type: 'video',
+      relatedToVideoId: videoId,
+      maxResults: String(Math.min(Math.max(maxResults, 1), 5)),
+      key: apiKey,
+    })
+
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`)
+    if (!res.ok) {
+      console.error('YouTube Search API error:', res.status, await res.text().catch(() => ''))
+      return []
+    }
+    const data = await res.json().catch(() => ({}))
+    const items = Array.isArray(data?.items) ? data.items : []
+    const results: Array<{ title: string; url: string }> = []
+    for (const item of items) {
+      const vid = item?.id?.videoId
+      const title = item?.snippet?.title || 'Видео'
+      if (vid) {
+        results.push({ title, url: `https://www.youtube.com/watch?v=${vid}` })
+      }
+      if (results.length >= maxResults) break
+    }
+    return results
+  } catch (e) {
+    console.error('Failed to fetch related videos:', e)
+    return []
+  }
+}

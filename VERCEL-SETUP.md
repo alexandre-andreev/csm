@@ -5,26 +5,36 @@
 Добавьте следующие переменные окружения в настройках проекта Vercel:
 
 ### Supabase Configuration
-```
+
+```bash
 NEXT_PUBLIC_SUPABASE_URL=ваш_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_supabase_anon_key
 ```
 
 ### Google Gemini AI API
-```
+
+```bash
 GOOGLE_GEMINI_API_KEY=ваш_google_gemini_api_key
 ```
 
 ### YouTube Transcript API
-```
+
+```bash
 TRANSCRIPT_API_KEY=ваш_transcript_api_key
+```
+
+### YouTube Data API (для похожих видео)
+
+```bash
+YOUTUBE_DATA_API_KEY=ваш_youtube_data_api_key
 ```
 
 ## Инструкции по настройке
 
 1. **Supabase**: Получите URL и Anon Key из настроек проекта Supabase
 2. **Google Gemini**: Получите API ключ из Google AI Studio
-3. **YouTube Transcript API**: Получите API ключ с https://www.youtube-transcript.io/
+3. **YouTube Transcript API**: Получите API ключ с <https://www.youtube-transcript.io/>
+4. **YouTube Data API**: Получите API ключ в Google Cloud Console и включите API `YouTube Data API v3`
 
 ## Важные замечания
 
