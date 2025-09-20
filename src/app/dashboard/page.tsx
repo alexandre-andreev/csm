@@ -917,7 +917,8 @@ export default function DashboardPage() {
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: '0.5rem',
-                        maxWidth: '100%'
+                        maxWidth: '100%',
+                        overflowX: 'hidden'
                       }}>
                         {allTags.map(tag => {
                           const active = selectedTags.some(t => t.toLowerCase() === tag.toLowerCase())
