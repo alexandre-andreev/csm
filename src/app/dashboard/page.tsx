@@ -430,8 +430,9 @@ export default function DashboardPage() {
                 border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                 backgroundColor: theme === 'dark' ? '#1e293b' : 'white',
                 color: theme === 'dark' ? '#f1f5f9' : '#111827',
-                outline: 'none',
-                marginBottom: '0.75rem'
+              outline: 'none',
+              marginBottom: '0.75rem',
+              fontSize: '16px'
               }}
             />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: 280, overflowY: 'auto' }}>
@@ -885,7 +886,8 @@ export default function DashboardPage() {
                       color: theme === 'dark' ? '#f1f5f9' : '#111827',
                       transition: 'border-color 0.2s',
                       outline: 'none',
-                      boxSizing: 'border-box'
+                      boxSizing: 'border-box',
+                      fontSize: '16px'
                     }}
                     onFocus={(e) => e.currentTarget.style.borderColor = '#9333ea'}
                     onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
@@ -1057,10 +1059,13 @@ export default function DashboardPage() {
                         {/* Tags (from Supabase) */}
                         <div style={{
                           display: 'flex',
+                          flexDirection: isMobile ? 'column' : 'row',
                           flexWrap: isMobile ? 'nowrap' : 'wrap',
-                          overflowX: isMobile ? 'auto' : 'visible',
-                          gap: '0.5rem',
-                          marginBottom: '0.5rem'
+                          overflowX: isMobile ? 'hidden' : 'visible',
+                          gap: isMobile ? '0.35rem' : '0.5rem',
+                          marginBottom: '0.5rem',
+                          alignItems: 'flex-start',
+                          maxWidth: '100%'
                         }}>
                           {Array.isArray(summary.tags) && summary.tags.length > 0 && summary.tags.map((tag: string) => (
                             <span key={tag} style={{
@@ -1072,7 +1077,10 @@ export default function DashboardPage() {
                               background: theme === 'dark' ? '#0f172a' : '#f3f4f6',
                               color: theme === 'dark' ? '#e5e7eb' : '#374151',
                               fontSize: '0.75rem',
-                              whiteSpace: 'nowrap'
+                              whiteSpace: 'nowrap',
+                              maxWidth: '100%',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
                             }}>
                               {tag}
                             </span>

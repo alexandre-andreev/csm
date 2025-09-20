@@ -736,7 +736,8 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                         border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                         backgroundColor: theme === 'dark' ? '#334155' : 'white',
                         color: theme === 'dark' ? '#f1f5f9' : '#111827',
-                        outline: 'none'
+                      outline: 'none',
+                      fontSize: '16px'
                       }}
                     />
                     {/* Suggestions dropdown */}
