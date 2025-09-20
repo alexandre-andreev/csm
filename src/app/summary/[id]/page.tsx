@@ -221,7 +221,66 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
     await saveTags(tags.filter(t => t !== tag))
   }
 
-  // (removed) related videos UI per user request
+  // Restore related videos UI with create buttons
+  const [related, setRelated] = useState<Array<{ videoId: string; title: string; url: string }>>([])
+  const [existingById, setExistingById] = useState<Record<string, string | null>>({})
+  const [creatingId, setCreatingId] = useState<string>('')
+
+  const extractIdFromUrl = (u: string): string => {
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    const m = (u || '').match(regex)
+    return m ? m[1] : ''
+  }
+
+  useEffect(() => {
+    const loadRelated = async () => {
+      if (!summary) return
+      const mainId = extractIdFromUrl(summary.youtube_url || '')
+      if (!mainId) return
+      try {
+        const res = await fetch(`/api/related?videoId=${encodeURIComponent(mainId)}&title=${encodeURIComponent(summary.video_title)}&max=3`)
+        const data = await res.json().catch(() => ({}))
+        const items: Array<{ videoId: string; title: string; url: string }> = Array.isArray(data?.items) ? data.items : []
+        setRelated(items)
+        const checks = await Promise.all(items.map(async (it) => {
+          try {
+            const r = await fetch(`/api/summaries/exists?videoId=${encodeURIComponent(it.videoId)}`)
+            const j = await r.json().catch(() => ({}))
+            return [it.videoId, j?.exists ? (j?.summary?.id || null) : null] as const
+          } catch {
+            return [it.videoId, null] as const
+          }
+        }))
+        const map: Record<string, string | null> = {}
+        for (const [vid, sid] of checks) map[vid] = sid
+        setExistingById(map)
+      } catch {}
+    }
+    loadRelated()
+  }, [summary])
+
+  const handleCreateRelated = async (videoId: string) => {
+    if (!videoId || creatingId) return
+    setCreatingId(videoId)
+    try {
+      const url = `https://www.youtube.com/watch?v=${videoId}`
+      const resp = await fetch('/api/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+      const data = await resp.json()
+      if (resp.ok && data?.id) {
+        router.push(`/summary/${data.id}`)
+      } else {
+        alert(data?.error || 'Не удалось создать аннотацию')
+      }
+    } catch (e) {
+      alert('Ошибка сети при создании аннотации')
+    } finally {
+      setCreatingId('')
+    }
+  }
 
 
   if (!mounted) {
@@ -834,7 +893,62 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
               {summary.summary_text}
             </ReactMarkdown>
           </div>
-          {/* (removed) related videos list per request */}
+          {Array.isArray(related) && related.length > 0 && (
+            <div style={{ marginTop: '2rem' }}>
+              <h3 style={{
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                margin: '0 0 0.75rem 0',
+                color: theme === 'dark' ? '#f1f5f9' : '#111827'
+              }}>Похожие видео</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {related.map(item => {
+                  const existsSummaryId = existingById[item.videoId]
+                  const isCreating = creatingId === item.videoId
+                  return (
+                    <div key={item.videoId} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.75rem',
+                      border: theme === 'dark' ? '1px solid #475569' : '1px solid #e5e7eb',
+                      borderRadius: '0.5rem',
+                      padding: '0.5rem 0.75rem',
+                      background: theme === 'dark' ? '#0f172a' : '#f9fafb'
+                    }}>
+                      <span style={{
+                        color: theme === 'dark' ? '#60a5fa' : '#2563eb',
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>{item.title}</span>
+                      {existsSummaryId ? (
+                        <button onClick={() => router.push(`/summary/${existsSummaryId}`)} style={{
+                          padding: '0.4rem 0.7rem',
+                          borderRadius: '0.375rem',
+                          border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
+                          background: 'transparent',
+                          color: theme === 'dark' ? '#f1f5f9' : '#374151',
+                          cursor: 'pointer'
+                        }}>Открыть</button>
+                      ) : (
+                        <button disabled={isCreating} onClick={() => handleCreateRelated(item.videoId)} style={{
+                          padding: '0.4rem 0.7rem',
+                          borderRadius: '0.375rem',
+                          border: '1px solid #9333ea',
+                          background: isCreating ? '#9ca3af' : 'linear-gradient(135deg, #9333ea, #3b82f6)',
+                          color: '#fff',
+                          cursor: isCreating ? 'not-allowed' : 'pointer'
+                        }}>{isCreating ? 'Создание…' : 'Создать аннотацию'}</button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

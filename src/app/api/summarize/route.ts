@@ -60,21 +60,8 @@ export async function POST(request: NextRequest) {
       getYouTubeTranscript(videoId)
     ])
 
-    // Генерируем аннотацию
-    let summary = await generateSummary(transcript, videoInfo.title)
-    
-    // Пытаемся получить до 3 похожих видео и дополняем аннотацию разделом в конце
-    try {
-      const related = await getRelatedYouTubeVideos(videoId, 3, videoInfo.title)
-      if (Array.isArray(related) && related.length > 0) {
-        const linksMd = related
-          .map((r, idx) => `${idx + 1}. [${r.title}](${r.url})`)
-          .join('\n')
-        summary += `\n\n#### Похожие видео\n${linksMd}`
-      }
-    } catch (e) {
-      console.warn('Не удалось получить похожие видео:', e)
-    }
+    // Генерируем аннотацию (без добавления списка ссылок)
+    const summary = await generateSummary(transcript, videoInfo.title)
 
     const processingTime = Date.now() - startTime
 
