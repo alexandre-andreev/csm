@@ -115,7 +115,8 @@ export function extractVideoId(url: string): string {
  */
 export async function getRelatedYouTubeVideos(
   videoId: string,
-  maxResults: number = 3
+  maxResults: number = 3,
+  fallbackQuery?: string
 ): Promise<Array<{ title: string; url: string }>> {
   const apiKey = process.env.YOUTUBE_DATA_API_KEY
   if (!apiKey) {
@@ -132,18 +133,43 @@ export async function getRelatedYouTubeVideos(
       key: apiKey,
     })
 
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`)
-    if (!res.ok) {
-      console.error('YouTube Search API error:', res.status, await res.text().catch(() => ''))
-      return []
+    let res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`)
+    let ok = res.ok
+    let bodyText = ''
+    if (!ok) {
+      bodyText = await res.text().catch(() => '')
+      console.error('YouTube Search API error:', res.status, bodyText)
     }
-    const data = await res.json().catch(() => ({}))
-    const items = Array.isArray(data?.items) ? data.items : []
-    const results: Array<{ title: string; url: string }> = []
+
+    // Fallback: if related search failed or yielded nothing, try text query by title
+    let items: any[] = []
+    if (ok) {
+      const data = await res.json().catch(() => ({}))
+      items = Array.isArray(data?.items) ? data.items : []
+    }
+
+    if ((!ok || items.length === 0) && fallbackQuery) {
+      const q = new URLSearchParams({
+        part: 'snippet',
+        type: 'video',
+        q: fallbackQuery,
+        maxResults: String(Math.min(Math.max(maxResults, 1), 5)),
+        key: apiKey,
+      })
+      const res2 = await fetch(`https://www.googleapis.com/youtube/v3/search?${q.toString()}`)
+      if (!res2.ok) {
+        console.error('YouTube Search API fallback error:', res2.status, await res2.text().catch(() => ''))
+        return []
+      }
+      const data2 = await res2.json().catch(() => ({}))
+      items = Array.isArray(data2?.items) ? data2.items : []
+    }
+
+    const results: Array<{ title: string; url: string }>> = []
     for (const item of items) {
       const vid = item?.id?.videoId
       const title = item?.snippet?.title || 'Видео'
-      if (vid) {
+      if (vid && vid !== videoId) {
         results.push({ title, url: `https://www.youtube.com/watch?v=${vid}` })
       }
       if (results.length >= maxResults) break

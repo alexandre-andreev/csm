@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     
     // Пытаемся получить до 3 похожих видео и дополняем аннотацию разделом в конце
     try {
-      const related = await getRelatedYouTubeVideos(videoId, 3)
+      const related = await getRelatedYouTubeVideos(videoId, 3, videoInfo.title)
       if (Array.isArray(related) && related.length > 0) {
         const linksMd = related
           .map((r, idx) => `${idx + 1}. [${r.title}](${r.url})`)
