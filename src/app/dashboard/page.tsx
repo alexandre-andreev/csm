@@ -839,9 +839,9 @@ export default function DashboardPage() {
           }}>
             <div style={{
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1.5rem'
+              flexDirection: 'column',
+              gap: '0.75rem',
+              marginBottom: '1rem'
             }}>
               <h2 style={{
                 margin: 0,
@@ -851,16 +851,15 @@ export default function DashboardPage() {
               }}>
                 Ваши аннотации
               </h2>
-              
+
               <div style={{
                 display: 'flex',
                 flexDirection: isMobile ? 'column' : 'row',
-                alignItems: isMobile ? 'stretch' : 'center',
-                gap: '1rem'
+                alignItems: 'stretch',
+                gap: '0.75rem',
+                width: '100%'
               }}>
-                <div style={{
-                  position: 'relative'
-                }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
                   <Search style={{
                     position: 'absolute',
                     left: '0.75rem',
@@ -876,7 +875,7 @@ export default function DashboardPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Поиск аннотаций..."
                     style={{
-                      width: isMobile ? '100%' : '250px',
+                      width: '100%',
                       maxWidth: '100%',
                       height: '2.5rem',
                       padding: '0 1rem 0 2.5rem',
@@ -893,9 +892,10 @@ export default function DashboardPage() {
                     onBlur={(e) => e.currentTarget.style.borderColor = theme === 'dark' ? '#475569' : '#d1d5db'}
                   />
                 </div>
+
                 {/* Tags filter control */}
                 {allTags.length > 0 && (
-                  <div>
+                  <div style={{ flexShrink: 0 }}>
                     {isMobile ? (
                       <button
                         onClick={() => setIsTagModalOpen(true)}
@@ -905,7 +905,8 @@ export default function DashboardPage() {
                           border: theme === 'dark' ? '1px solid #475569' : '1px solid #d1d5db',
                           background: 'transparent',
                           color: theme === 'dark' ? '#f1f5f9' : '#374151',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          width: '100%'
                         }}
                         title="Фильтр по тегам"
                       >

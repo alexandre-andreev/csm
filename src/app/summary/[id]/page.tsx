@@ -696,10 +696,11 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                 }}>
                   <div style={{
                     display: 'flex',
-                    flexWrap: isMobile ? 'nowrap' : 'wrap',
-                    overflowX: isMobile ? 'auto' : 'visible',
+                flexWrap: 'wrap',
+                overflowX: 'hidden',
                     gap: '0.5rem',
-                    paddingBottom: isMobile ? '0.25rem' : 0
+                paddingBottom: isMobile ? '0.25rem' : 0,
+                maxWidth: '100%'
                   }}>
                     {tags.map(tag => (
                       <span key={tag} style={{
@@ -720,7 +721,15 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                       </span>
                     ))}
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', flex: isMobile ? '1' : '0' }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                    flex: isMobile ? '1' : '0',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    alignItems: 'stretch',
+                    position: 'relative',
+                    width: '100%'
+                  }}>
                     <input
                       type="text"
                       value={newTag}
@@ -744,7 +753,9 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                     {newTag.trim().length > 0 && tagSuggestions.length > 0 && (
                       <div style={{
                         position: 'absolute',
-                        marginTop: isMobile ? '2.6rem' : '2.35rem',
+                        top: isMobile ? '2.7rem' : '2.4rem',
+                        left: 0,
+                        right: 0,
                         background: theme === 'dark' ? '#0f172a' : '#ffffff',
                         color: theme === 'dark' ? '#e5e7eb' : '#111827',
                         border: theme === 'dark' ? '1px solid #475569' : '1px solid #e5e7eb',
@@ -753,7 +764,7 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                         zIndex: 20,
                         maxHeight: 220,
                         overflowY: 'auto',
-                        minWidth: '200px'
+                        width: '100%'
                       }}>
                         {tagSuggestions
                           .filter(t => t && t.toLowerCase().includes(newTag.toLowerCase()) && !tags.map(x => x.toLowerCase()).includes(t.toLowerCase()))
@@ -776,7 +787,8 @@ export default function SummaryPage({ params }: { params: Promise<{ id: string }
                       background: 'linear-gradient(135deg, #9333ea, #3b82f6)',
                       color: '#fff',
                       cursor: 'pointer',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      width: isMobile ? '100%' : 'auto'
                     }}>Добавить</button>
                   </div>
                 </div>
