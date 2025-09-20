@@ -117,7 +117,7 @@ export async function getRelatedYouTubeVideos(
   videoId: string,
   maxResults: number = 3,
   fallbackQuery?: string
-): Promise<Array<{ title: string; url: string }>> {
+): Promise<Array<{ videoId: string; title: string; url: string }>> {
   const apiKey = process.env.YOUTUBE_DATA_API_KEY
   if (!apiKey) {
     // Тихо выходим, если ключ не настроен
@@ -165,12 +165,12 @@ export async function getRelatedYouTubeVideos(
       items = Array.isArray(data2?.items) ? data2.items : []
     }
 
-    const results: Array<{ title: string; url: string }> = []
+    const results: Array<{ videoId: string; title: string; url: string }> = []
     for (const item of items) {
       const vid = item?.id?.videoId
       const title = item?.snippet?.title || 'Видео'
       if (vid && vid !== videoId) {
-        results.push({ title, url: `https://www.youtube.com/watch?v=${vid}` })
+        results.push({ videoId: vid, title, url: `https://www.youtube.com/watch?v=${vid}` })
       }
       if (results.length >= maxResults) break
     }

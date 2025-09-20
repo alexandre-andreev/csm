@@ -38,6 +38,19 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now()
 
+    // Дедуп: если уже есть аннотация для этого видео у пользователя — вернуть её
+    try {
+      const existing = await supabase
+        .from('summaries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('video_id', extractVideoId(url))
+        .limit(1)
+      if (Array.isArray(existing?.data) && existing.data.length > 0) {
+        return NextResponse.json(existing.data[0])
+      }
+    } catch {}
+
     // Извлекаем ID видео
     const videoId = extractVideoId(url)
 
